@@ -1,5 +1,7 @@
 package net.dataforte.infinispan.web;
 
+import org.infinispan.configuration.cache.BackupConfiguration;
+import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
@@ -28,6 +30,21 @@ public class Listener implements ServletContextListener {
       global.globalJmxStatistics().enable();
       ConfigurationBuilder config = new ConfigurationBuilder();
       config.jmxStatistics().enable();
+
+      // xsite config
+      config.sites().addBackup()
+            .site("NYC")
+            .backupFailurePolicy(BackupFailurePolicy.WARN)
+            .strategy(BackupConfiguration.BackupStrategy.SYNC)
+            .replicationTimeout(12000)
+            .sites().addInUseBackupSite("NYC")
+            .sites().addBackup()
+            .site("SFO")
+            .backupFailurePolicy(BackupFailurePolicy.IGNORE)
+            .strategy(BackupConfiguration.BackupStrategy.ASYNC)
+            .sites().addInUseBackupSite("SFO");
+
+
       manager = new DefaultCacheManager(global.build(), config.build());
       sce.getServletContext().setAttribute(CONTAINER, manager.toString());
       sce.getServletContext().setAttribute(CACHE, manager.getCache());
