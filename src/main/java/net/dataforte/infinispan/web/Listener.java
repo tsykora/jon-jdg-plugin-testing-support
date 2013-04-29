@@ -94,11 +94,26 @@ public class Listener implements ServletContextListener {
 
       System.out.println("Context initialized.... putting 4 entries into default cache..... ");
 
+
+      // some initial puts
+
       Cache c = manager.getCache("default");
       c.put("key1", "value1");
       c.put("key2", "value2");
       c.put("key3", "value3");
       c.put("key4", "value4");
+
+      System.out.println("Putting entries into other caches..... ");
+
+      Cache ctrans = manager.getCache("transactionalCache");
+      Cache cfcs = manager.getCache("fcsDistCache");
+//        Cache cxsite = manager.getCache("xsiteCache");
+      Cache cinval = manager.getCache("invalidationCache");
+
+      ctrans.put("key1", "value1");
+      cfcs.put("key1", "value1");
+//        cxsite.put("key1", "value1");
+      cinval.put("key1", "value1");
    }
 
    @Override

@@ -28,18 +28,6 @@
         // instantiate all caches
         Cache c = manager.getCache("default");
 
-        Cache ctrans = manager.getCache("transactionalCache");
-        Cache cfcs = manager.getCache("fcsDistCache");
-//        Cache cxsite = manager.getCache("xsiteCache");
-        Cache cinval = manager.getCache("invalidationCache");
-
-
-        ctrans.put("key1", "value1");
-        cfcs.put("key1", "value1");
-//        cxsite.put("key1", "value1");
-        cinval.put("key1", "value1");
-
-
         StringBuilder sb = new StringBuilder();
         for (String name : manager.getCacheNames()) {
             sb.append(name + " ");
