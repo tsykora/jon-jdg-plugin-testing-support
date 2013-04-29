@@ -1,9 +1,13 @@
 package net.dataforte.infinispan.web;
 
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.transaction.TransactionMode;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -25,12 +29,41 @@ public class Listener implements ServletContextListener {
    @Override
    public void contextInitialized(ServletContextEvent sce) {
       GlobalConfigurationBuilder global = new GlobalConfigurationBuilder();
+      global.transport().defaultTransport();
       global.globalJmxStatistics().enable();
-      ConfigurationBuilder config = new ConfigurationBuilder();
-      config.jmxStatistics().enable();
+
+      ConfigurationBuilder configJmxOnly = new ConfigurationBuilder();
+      configJmxOnly.jmxStatistics().enable().indexing().indexLocalOnly(false).enable();
+
+      // deadlock + transactions
+      ConfigurationBuilder configTrans = new ConfigurationBuilder();
+      configTrans.jmxStatistics().enable();
+      configTrans.transaction().transactionManagerLookup(new org.infinispan.transaction.lookup.GenericTransactionManagerLookup()).
+            transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
+      configTrans.deadlockDetection().enable();
+
+      // FCS + Dist
+      ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
+      configFCSdist.jmxStatistics().enable();
+      configFCSdist.loaders().passivation(true).addFileCacheStore().location("/tmp/");
+      configFCSdist.clustering().cacheMode(CacheMode.DIST_ASYNC).l1().enable();
+
+      // Invalidation
+      ConfigurationBuilder configInvalidation = new ConfigurationBuilder();
+      configInvalidation.jmxStatistics().enable();
+      configInvalidation.clustering().cacheMode(CacheMode.INVALIDATION_ASYNC);
+
+
+      //
+//      ConfigurationBuilder configRollUps = new ConfigurationBuilder();
+//      configRollUps.jmxStatistics().enable();
+//      configRollUps.loaders().addStore;
+
 
       // xsite config
-//      config.sites().addBackup()
+//      ConfigurationBuilder configXsite = new ConfigurationBuilder();
+//      configXsite.jmxStatistics().enable();
+//      configXsite.sites().addBackup()
 //            .site("NYC")
 //            .backupFailurePolicy(BackupFailurePolicy.WARN)
 //            .strategy(BackupConfiguration.BackupStrategy.SYNC)
@@ -43,25 +76,36 @@ public class Listener implements ServletContextListener {
 //            .sites().addInUseBackupSite("SFO");
 
 
-      config.loaders().addFileCacheStore().location("/tmp/");
 
-      manager = new DefaultCacheManager(global.build(), config.build());
+
+
+      manager = new DefaultCacheManager(global.build(), configJmxOnly.build());
+
+      manager.defineConfiguration("transactionalCache", configTrans.build());
+      manager.defineConfiguration("fcsDistCache", configFCSdist.build());
+      manager.defineConfiguration("default", configJmxOnly.build());
+//      manager.defineConfiguration("xsiteCache", configXsite.build());
+      manager.defineConfiguration("invalidationCache", configInvalidation.build());
+
       sce.getServletContext().setAttribute(CONTAINER, manager.toString());
-      sce.getServletContext().setAttribute(CACHE, manager.getCache());
-
+      sce.getServletContext().setAttribute(CACHE, manager.getCache("default"));
       sce.getServletContext().setAttribute("manager", manager);
 
+
       System.out.println("Context initialized.... putting 4 entries into default cache..... ");
-      manager.getCache().put("key1", "value1");
-      manager.getCache().put("key2", "value2");
-      manager.getCache().put("key3", "value3");
-      manager.getCache().put("key4", "value4");
+
+      Cache c = manager.getCache("default");
+      c.put("key1", "value1");
+      c.put("key2", "value2");
+      c.put("key3", "value3");
+      c.put("key4", "value4");
    }
 
    @Override
    public void contextDestroyed(ServletContextEvent sce) {
       sce.getServletContext().removeAttribute(CACHE);
       sce.getServletContext().removeAttribute(CONTAINER);
+
       manager.stop();
    }
 }

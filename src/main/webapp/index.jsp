@@ -21,15 +21,28 @@
     Using: <%=Version.printVersion()%><br/>
     CacheManager instance: <%=application.getAttribute("container")%><br/>
 
-    Now operating on: <%=application.getAttribute("cache")%><br/>
+    Now operating on: <b><%=application.getAttribute("cache")%><br/></b>
 
     <%
         EmbeddedCacheManager manager = (EmbeddedCacheManager) application.getAttribute("manager");
-        Cache c = manager.getCache();
+        // instantiate all caches
+        Cache c = manager.getCache("default");
+
+        Cache ctrans = manager.getCache("transactionalCache");
+        Cache cfcs = manager.getCache("fcsDistCache");
+//        Cache cxsite = manager.getCache("xsiteCache");
+        Cache cinval = manager.getCache("invalidationCache");
+
+
+        ctrans.put("key1", "value1");
+        cfcs.put("key1", "value1");
+//        cxsite.put("key1", "value1");
+        cinval.put("key1", "value1");
+
 
         StringBuilder sb = new StringBuilder();
         for (String name : manager.getCacheNames()) {
-            sb.append(name);
+            sb.append(name + " ");
         }
 
 
@@ -65,6 +78,10 @@
         long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
         String status = c.getStatus().toString();
 
+
+
+//        c.getAdvancedCache().get
+
     %>
 
     <br/>
@@ -78,7 +95,7 @@
     <%=status%> <br/> <br/> <br/>
 
 
-    All caches names excluding default cache (= started named caches from JON): <%=sb.toString()%><br/><br/>
+    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb.toString()%><br/><br/></b>
 
     <br/>
     <br/>
