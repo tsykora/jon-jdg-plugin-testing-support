@@ -30,7 +30,7 @@
 
         StringBuilder sb = new StringBuilder();
         for (String name : manager.getCacheNames()) {
-            sb.append(name + " ");
+            sb.append(name + " | ");
         }
 
 
