@@ -20,94 +20,397 @@
 
     Using: <%=Version.printVersion()%><br/>
     CacheManager instance: <%=application.getAttribute("container")%><br/>
-
-    Now operating on: <b><%=application.getAttribute("cache")%><br/></b>
+    CacheManagerLon instance: <%=application.getAttribute("container2")%><br/>
+    CacheManagerNyc instance: <%=application.getAttribute("container3")%><br/>
 
     <%
         EmbeddedCacheManager manager = (EmbeddedCacheManager) application.getAttribute("manager");
-        // instantiate all caches
-        Cache c = manager.getCache("default");
 
         StringBuilder sb = new StringBuilder();
         for (String name : manager.getCacheNames()) {
             sb.append(name + " | ");
         }
-
-
-        if (request.getParameter("addEntry") != null) {
-            int rand = r.nextInt(1000);
-            c.put("key" + rand, "value" + rand);
-        }
-
-        if (request.getParameter("stopCache") != null) {
-            c.stop();
-        }
-
-        if (request.getParameter("startCache") != null) {
-            c.start();
-        }
-
-        if (request.getParameter("clearCache") != null) {
-            c.clear();
-        }
-
-        if (request.getParameter("resetStatistics") != null) {
-            for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {
-                boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());
-                if (isSubclass) {
-                    CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;
-                    cacheMgmtInterceptor.resetStatistics();
-                }
-            }
-        }
-
-
-        int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();
-        long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
-        String status = c.getStatus().toString();
-
-
-
-//        c.getAdvancedCache().get
-
     %>
 
-    <br/>
-    <br/>
-    Stats: <br/>
-    Current entries:
-    <%=currEntries%> <br/>
-    Total entries:
-    <%=totalEntries%> <br/>
-    Cache status:
-    <%=status%> <br/> <br/> <br/>
+    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb.toString()%>
+    <br/><br/></b>
+
+    <table>
+        <tr>
+
+            <%
+                // for each cache
+                for (String name : manager.getCacheNames()) {
+            %>
+
+            <td>
+
+                <%
+
+                    // get cache by name
+                    Cache c = manager.getCache(name);
 
 
-    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb.toString()%><br/><br/></b>
+                    if (request.getParameter(name + "addEntry") != null) {
+                        int rand = r.nextInt(1000);
+                        c.put("key" + rand, "value" + rand);
+                    }
 
-    <br/>
-    <br/>
+                    if (request.getParameter(name + "stopCache") != null) {
+                        c.stop();
+                    }
 
-    <button type="submit" name="addEntry" value="Add Entry Button">Add Entry into Cache</button>
-    <button type="submit" name="clearCache" value="Clear Cache Button">CLEAR Cache</button>
-    <button type="submit" name="resetStatistics" value="Reset Statistics Button">Reset Cache Statistics</button>
+                    if (request.getParameter(name + "startCache") != null) {
+                        c.start();
+                    }
+
+                    if (request.getParameter(name + "clearCache") != null) {
+                        c.clear();
+                    }
+
+                    if (request.getParameter(name + "resetStatistics") != null) {
+                        for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {
+                            boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());
+                            if (isSubclass) {
+                                CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;
+                                cacheMgmtInterceptor.resetStatistics();
+                            }
+                        }
+                    }
 
 
-    <br/>
-    <br/>
-    <button type="submit" name="startCache" value="Start Cache Button">START Cache</button>
-    <button type="submit" name="stopCache" value="Stop Cache Button">STOP Cache</button>
+                    // stats
+                    int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();
+                    long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
+                    String status = c.getStatus().toString();
 
 
-    <br/>
-    <br/>
-    <button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>
+                    // **********************
+                    // for each cache, page contetn:
+                %>
 
-    <br/>
-    <br/>
 
-    Default cache entries: <br/>
-    <%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>
+
+                <br/>
+                Cache name: <b><u><%=name%></u></b>
+                <br/>
+                <br/>
+                Stats: <br/>
+                Current entries:
+                <%=currEntries%> <br/>
+                Total entries:
+                <%=totalEntries%> <br/>
+                Cache status:
+                <%=status%> <br/> <br/> <br/>
+
+                <%=name%> cache entries: <br/>
+                <%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>
+
+
+
+
+                <br/>
+                <br/>
+                <%-- format: cachename + operation name --%>
+                <button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>
+                <button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>
+                <button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache
+                    Statistics
+                </button>
+
+
+                <br/>
+                <br/>
+                <button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>
+                <button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>
+
+
+                <br/>
+                <br/>
+                <button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>
+
+                <br/>
+                <br/>
+                <%--Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>--%>
+
+                <br/>
+                <br/>
+
+            </td>
+
+            <%
+                    // end for getCacheNames()
+                }
+            %>
+        </tr>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <%
+
+        EmbeddedCacheManager managerRemoteLon = (EmbeddedCacheManager) application.getAttribute("managerRemoteLon");
+
+        StringBuilder sb2 = new StringBuilder();
+        for (String name : managerRemoteLon.getCacheNames()) {
+            sb2.append(name + " | ");
+        }
+    %>
+
+    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb2.toString()%>
+        <br/><br/></b>
+
+    <table>
+        <tr>
+
+            <%
+                // for each cache
+                for (String name : managerRemoteLon.getCacheNames()) {
+            %>
+
+            <td>
+
+                <%
+
+                    // get cache by name
+                    Cache c = managerRemoteLon.getCache(name);
+
+                    if (request.getParameter(name + "addEntry") != null) {
+                        int rand = r.nextInt(1000);
+                        c.put("key" + rand, "value" + rand);
+                    }
+
+                    if (request.getParameter(name + "stopCache") != null) {
+                        c.stop();
+                    }
+
+                    if (request.getParameter(name + "startCache") != null) {
+                        c.start();
+                    }
+
+                    if (request.getParameter(name + "clearCache") != null) {
+                        c.clear();
+                    }
+
+                    if (request.getParameter(name + "resetStatistics") != null) {
+                        for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {
+                            boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());
+                            if (isSubclass) {
+                                CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;
+                                cacheMgmtInterceptor.resetStatistics();
+                            }
+                        }
+                    }
+
+
+                    // stats
+                    int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();
+                    long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
+                    String status = c.getStatus().toString();
+
+
+                    // **********************
+                    // for each cache, page contetn:
+                %>
+
+
+
+                <br/>
+                Cache name: <b><u><%=name%></u></b>
+                <br/>
+                <br/>
+                Stats: <br/>
+                Current entries:
+                <%=currEntries%> <br/>
+                Total entries:
+                <%=totalEntries%> <br/>
+                Cache status:
+                <%=status%> <br/> <br/> <br/>
+
+                <%=name%> cache entries: <br/>
+                <%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>
+
+
+
+
+                <br/>
+                <br/>
+                <%-- format: cachename + operation name --%>
+                <button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>
+                <button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>
+                <button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache
+                    Statistics
+                </button>
+
+
+                <br/>
+                <br/>
+                <button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>
+                <button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>
+
+
+                <br/>
+                <br/>
+                <button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>
+
+                <br/>
+                <br/>
+                <%--Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>--%>
+
+                <br/>
+                <br/>
+
+            </td>
+
+            <%
+                    // end for getCacheNames()
+                }
+            %>
+        </tr>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+    <%
+
+        EmbeddedCacheManager managerRemoteNyc = (EmbeddedCacheManager) application.getAttribute("managerRemoteNyc");
+
+        StringBuilder sb3 = new StringBuilder();
+        for (String name : managerRemoteNyc.getCacheNames()) {
+            sb3.append(name + " | ");
+        }
+    %>
+
+    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb3.toString()%>
+        <br/><br/></b>
+
+    <table>
+        <tr>
+
+            <%
+                // for each cache
+                for (String name : managerRemoteNyc.getCacheNames()) {
+            %>
+
+            <td>
+
+                <%
+
+                    // get cache by name
+                    Cache c = managerRemoteNyc.getCache(name);
+
+                    if (request.getParameter(name + "addEntry") != null) {
+                        int rand = r.nextInt(1000);
+                        c.put("key" + rand, "value" + rand);
+                    }
+
+                    if (request.getParameter(name + "stopCache") != null) {
+                        c.stop();
+                    }
+
+                    if (request.getParameter(name + "startCache") != null) {
+                        c.start();
+                    }
+
+                    if (request.getParameter(name + "clearCache") != null) {
+                        c.clear();
+                    }
+
+                    if (request.getParameter(name + "resetStatistics") != null) {
+                        for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {
+                            boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());
+                            if (isSubclass) {
+                                CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;
+                                cacheMgmtInterceptor.resetStatistics();
+                            }
+                        }
+                    }
+
+
+                    // stats
+                    int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();
+                    long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
+                    String status = c.getStatus().toString();
+
+
+                    // **********************
+                    // for each cache, page contetn:
+                %>
+
+
+
+                <br/>
+                Cache name: <b><u><%=name%></u></b>
+                <br/>
+                <br/>
+                Stats: <br/>
+                Current entries:
+                <%=currEntries%> <br/>
+                Total entries:
+                <%=totalEntries%> <br/>
+                Cache status:
+                <%=status%> <br/> <br/> <br/>
+
+                <%=name%> cache entries: <br/>
+                <%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>
+
+
+
+
+                <br/>
+                <br/>
+                <%-- format: cachename + operation name --%>
+                <button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>
+                <button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>
+                <button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache
+                    Statistics
+                </button>
+
+
+                <br/>
+                <br/>
+                <button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>
+                <button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>
+
+
+                <br/>
+                <br/>
+                <button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>
+
+                <br/>
+                <br/>
+                <%--Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>--%>
+
+                <br/>
+                <br/>
+
+            </td>
+
+            <%
+                    // end for getCacheNames()
+                }
+            %>
+        </tr>
+    </table>
+
 
 </form>
 
