@@ -18,7 +18,6 @@ import java.io.IOException;
  * Infinispan configuration wizard
  *
  * @author tsykora
- *
  */
 @WebListener()
 public class Listener implements ServletContextListener {
@@ -29,6 +28,9 @@ public class Listener implements ServletContextListener {
    EmbeddedCacheManager manager;
    EmbeddedCacheManager managerNycSite;
    EmbeddedCacheManager managerLonSite;
+
+//   EmbeddedCacheManager managerForHrServer;
+//   EmbeddedCacheManager managerForHrTargetServer;
 
    @Override
    public void contextInitialized(ServletContextEvent sce) {
@@ -89,28 +91,13 @@ public class Listener implements ServletContextListener {
          e.printStackTrace();
       }
 
-      // HOT ROD SERVER -- need 2 for Rolling Upgrades
-//      HotRodTestingUtil.startHotRodServer(managerForHrServer, 15002); // 12311
-
-
-
-        // way how to access protocol in Transport
+      // way how to access protocol in Transport
 //      manager.getTransport().getChannel().getProtocolStack().addProtocol();
 
       manager.defineConfiguration("transactionalCache", configTrans.build());
       manager.defineConfiguration("fcsDistCache", configFCSdist.build());
       manager.defineConfiguration("default", configJmxOnly.build());
       manager.defineConfiguration("invalidationCache", configInvalidation.build());
-
-
-      sce.getServletContext().setAttribute(CONTAINER, manager.toString());
-      sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
-      sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
-//      sce.getServletContext().setAttribute(CACHE, manager.getCache("default"));
-      sce.getServletContext().setAttribute("manager", manager);
-      sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
-      sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
-
 
 
       // some initial puts, these puts will cause:
@@ -142,6 +129,136 @@ public class Listener implements ServletContextListener {
       // put into NYC
       Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
       cnyc.put("keyNyc1", "valueNyc1"); // one simple put
+
+
+      // **********************
+      // Rolling upgrades stuff
+
+      // NOTE: Rolling upgrades may be still broken for ISPN Server because of changes in HotRod
+
+
+
+//      System.out.println("\n\n\n ROLLING UPGRADES SECTION ........... \n\n\n");
+//
+//
+//      GlobalConfigurationBuilder globalHr = GlobalConfigurationBuilder.defaultClusteredBuilder();
+//      globalHr.transport().defaultTransport();
+//      globalHr.globalJmxStatistics().jmxDomain("org.infinispan.hr").enable();
+//
+//
+//      ConfigurationBuilder configSourceCluster = new ConfigurationBuilder();
+//      configSourceCluster.jmxStatistics().enable().jmxStatistics();
+//
+//
+//      managerForHrServer = new DefaultCacheManager(globalHr.build(), configSourceCluster.build());
+//
+//      // HOT ROD SERVER -- need 2 for Rolling Upgrades
+//      HotRodTestingUtil.startHotRodServer(managerForHrServer, 11222); // 12311
+//
+//      Cache hrCache = managerForHrServer.getCache("defaultRollUps");
+//      hrCache.put("HR_key1", "HR_value1");
+//      hrCache.put("HR_key2", "HR_value2");
+//      hrCache.put("HR_key3", "HR_value3");
+//
+//
+//      System.out.println("\n\n\n" + managerForHrServer.getCacheNames().toString() + "\n\n\n");
+
+
+//      RemoteCacheStoreConfig remoteCacheStoreConfig = new RemoteCacheStoreConfig();
+//
+//      remoteCacheStoreConfig.setRemoteCacheName("defaultRollUps");
+//      Properties properties = new Properties();
+//      properties.put("infinispan.client.hotrod.server_list", "localhost:" + 11222);
+//      remoteCacheStoreConfig.setHotRodClientProperties(properties);
+//      remoteCacheStoreConfig.setRawValues(true);
+//      remoteCacheStoreConfig.purgeOnStartup(false);
+//
+//
+//      // TODO OTHER CONFIG?
+//
+//      // and put it into targetCluster to point source cluster
+//
+//      RemoteCacheStore remoteCacheStore = new RemoteCacheStore();
+//      try {
+//         // Do we need Marshaller?
+//         remoteCacheStore.init(remoteCacheStoreConfig, hrCache, null);
+//         remoteCacheStore.start();
+//         // **********************************************************
+//      } catch (CacheLoaderException e) {
+//         System.out.println("\n\n\n\n\n PROBLEM WITH REMOTE CACHE STORE \n\n\n");
+//         e.printStackTrace();
+//      }
+//
+//      System.out.println("\n\n\n\n\nREMOTE CACHE STORE STATISTICS --- before put into RCS");
+//      for (String stat : remoteCacheStore.getRemoteCache().stats().getStatsMap().keySet()) {
+//         System.out.println("Statistic: " + stat + " ---> value: " + remoteCacheStore.getRemoteCache().stats().getStatsMap().get(stat));
+//      }
+//
+//      System.out.println("\n\n\n\n\nREMOTE CACHE STORE STATISTICS --- after put 2 entries into RCS");
+//      remoteCacheStore.getRemoteCache().put("putIntoRCS1key", "putIntoRCS1value");
+//      remoteCacheStore.getRemoteCache().put("putIntoRCS2key", "putIntoRCS2value");
+//
+//      System.out.println("\n\n\n\n\nREMOTE CACHE STORE STATISTICS --- before put into RCS");
+//      for (String stat : remoteCacheStore.getRemoteCache().stats().getStatsMap().keySet()) {
+//         System.out.println("Statistic: " + stat + " ---> value: " + remoteCacheStore.getRemoteCache().stats().getStatsMap().get(stat));
+//      }
+
+
+      // source cluster is remote cache store for me
+      // this remoteCacheStore is SOURCE cache...
+      // I can see it now using this
+
+//      GlobalConfigurationBuilder globalTargetHr = GlobalConfigurationBuilder.defaultClusteredBuilder();
+//      globalTargetHr.transport().defaultTransport();
+//      globalTargetHr.globalJmxStatistics().jmxDomain("org.infinispan.target.hr").enable();
+//
+//      ConfigurationBuilder configTargetCluster = new ConfigurationBuilder();
+//      configTargetCluster.jmxStatistics().enable().jmxStatistics();
+//
+//      configTargetCluster.loaders().addStore(RemoteCacheStoreConfigurationBuilder.class)
+//            .fetchPersistentState(false)
+//            .ignoreModifications(false)
+//            .purgeOnStartup(false)
+//            .remoteCacheName("defaultRollUps")
+//                  // Set Upd rawValues and Wrapping and maybe entryWrapper properly after fixes in Rolling Upgrades
+////            .rawValues(true)
+////            .hotRodWrapping(true)
+////            .entryWrapper(??)
+//            .addServer()
+//            .host("127.0.0.1").port(11222);
+//
+//      managerForHrTargetServer = new DefaultCacheManager(globalTargetHr.build(), configTargetCluster.build());
+//
+//      // HOT ROD SERVER -- need 2 for Rolling Upgrades
+//      HotRodTestingUtil.startHotRodServer(managerForHrTargetServer, 11322); // 12311
+//
+//      Cache hrTargetCache = managerForHrTargetServer.getCache("defaultRollUps");
+//
+//      System.out.println("\n\n\n\nEntries in HR SOURCE CACHE before put to target: " + hrCache.getAdvancedCache().getStats().getTotalNumberOfEntries() +
+//                               "\n\n");
+//
+//      hrTargetCache.put("putIntoTargetCache1key", "putIntoTargetCache1value");
+//
+//      System.out.println("\n\n\n\nEntries in HR TARGET CACHE: " + hrTargetCache.getAdvancedCache().getStats().getTotalNumberOfEntries() +
+//                               "\n\n");
+//      System.out.println("\n\n\n\nEntries in HR SOURCE CACHE after put to target: " + hrCache.getAdvancedCache().getStats().getTotalNumberOfEntries() +
+//                               "\n\n");
+
+
+//      System.out.println("\n\n\n\n\nREMOTE CACHE STORE STATISTICS --- after put 1 into target server");
+//      for (String stat : remoteCacheStore.getRemoteCache().stats().getStatsMap().keySet()) {
+//         System.out.println("Statistic: " + stat + " ---> value: " + remoteCacheStore.getRemoteCache().stats().getStatsMap().get(stat));
+//      }
+
+
+      sce.getServletContext().setAttribute(CONTAINER, manager.toString());
+      sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
+      sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
+
+      sce.getServletContext().setAttribute("manager", manager);
+      sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
+      sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
+
    }
 
    @Override
@@ -154,5 +271,7 @@ public class Listener implements ServletContextListener {
       manager.stop();
       managerLonSite.stop();
       managerNycSite.stop();
+//      managerForHrServer.stop();
+//      managerForHrTargetServer.stop();
    }
 }
