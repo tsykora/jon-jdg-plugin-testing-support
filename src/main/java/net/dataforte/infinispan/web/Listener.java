@@ -41,20 +41,20 @@ public class Listener implements ServletContextListener {
 
       // for xsite
       GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
-//      global.transport().addProperty("configurationFile", "jgroups-LON.xml");
       global.transport().defaultTransport();
       global.globalJmxStatistics().enable();
 
+      ConfigurationBuilder configTrans = new ConfigurationBuilder();
+             configTrans.jmxStatistics().enable();
+             configTrans.transaction().transactionManagerLookup(new org.infinispan.transaction.lookup.GenericTransactionManagerLookup()).
+                   transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
+             configTrans.transaction().useSynchronization(false);
+             configTrans.deadlockDetection().enable();
+             configTrans.transaction().recovery().enable();
 
       ConfigurationBuilder configJmxOnly = new ConfigurationBuilder();
       configJmxOnly.jmxStatistics().enable().indexing().indexLocalOnly(false).enable();
 
-      // deadlock + transactions
-      ConfigurationBuilder configTrans = new ConfigurationBuilder();
-      configTrans.jmxStatistics().enable();
-      configTrans.transaction().transactionManagerLookup(new org.infinispan.transaction.lookup.GenericTransactionManagerLookup()).
-            transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
-      configTrans.deadlockDetection().enable();
 
       // FCS + Dist
       ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
