@@ -4,27 +4,18 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.interceptors.InvocationContextInterceptor;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
-import org.infinispan.transaction.TransactionTable;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
-import org.infinispan.transaction.tm.DummyTransaction;
 import org.infinispan.transaction.tm.DummyTransactionManager;
-import org.infinispan.transaction.xa.recovery.RecoveryAdminOperations;
-import org.infinispan.tx.recovery.RecoveryTestUtil;
-import org.infinispan.tx.recovery.admin.InDoubtWithCommitFailsTest;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAException;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Infinispan configuration wizard
@@ -148,13 +139,13 @@ public class Listener implements ServletContextListener {
 
       // **********************
       // In doubt transactions preparation stuff
-      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
-      try {
-         testInDoubt(true, ctrans, rao);
-      } catch (XAException e) {
-         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
-         e.printStackTrace();
-      }
+//      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
+//      try {
+//         testInDoubt(true, ctrans, rao);
+//      } catch (XAException e) {
+//         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
+//         e.printStackTrace();
+//      }
 
 
       // **********************
@@ -288,51 +279,51 @@ public class Listener implements ServletContextListener {
    }
 
 
-   private void testInDoubt(boolean commit, Cache ctrans, RecoveryAdminOperations recoveryAdminOperations) throws XAException {
-
-      assert recoveryAdminOperations.showInDoubtTransactions().isEmpty();
-      TransactionTable tt0 = ctrans.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
-
-
-      // need to intercept failure during commands
-      ctrans.getAdvancedCache().addInterceptorBefore(new InDoubtWithCommitFailsTest.ForceFailureInterceptor(),
-                                                     InvocationContextInterceptor.class);
-
-
-      DummyTransaction dummyTransaction1 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key1");
-      DummyTransaction dummyTransaction2 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key2");
-      DummyTransaction dummyTransaction3 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key3");
-      RecoveryTestUtil.prepareTransaction(dummyTransaction1);
-      RecoveryTestUtil.prepareTransaction(dummyTransaction2);
-      RecoveryTestUtil.prepareTransaction(dummyTransaction3);
-
-      List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
-      transactions.add(dummyTransaction1);
-      transactions.add(dummyTransaction2);
-      transactions.add(dummyTransaction3);
-
-      assert tt0.getLocalTxCount() == 3;
-
-      for (DummyTransaction dTrans : transactions) {
-         try {
-            // will fail because of InDoubtWithCommitFailsTest.ForceFailureInterceptor()
-            // remove this interceptor later to be able to force manually commit/rollback/forget via JMX (RHQ/jconsole)
-            if (commit) {
-               RecoveryTestUtil.commitTransaction(dTrans);
-            } else {
-               RecoveryTestUtil.rollbackTransaction(dTrans);
-            }
-            assert false : "exception expected";
-         } catch (Exception e) {
-            //expected -- induced failure
-         }
-      }
-
-      // REMOVE FAILING INTERCEPTOR from a cache
-      System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
-      ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
-
-   }
+//   private void testInDoubt(boolean commit, Cache ctrans, RecoveryAdminOperations recoveryAdminOperations) throws XAException {
+//
+//      assert recoveryAdminOperations.showInDoubtTransactions().isEmpty();
+//      TransactionTable tt0 = ctrans.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
+//
+//
+//      // need to intercept failure during commands
+//      ctrans.getAdvancedCache().addInterceptorBefore(new InDoubtWithCommitFailsTest.ForceFailureInterceptor(),
+//                                                     InvocationContextInterceptor.class);
+//
+//
+//      DummyTransaction dummyTransaction1 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key1");
+//      DummyTransaction dummyTransaction2 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key2");
+//      DummyTransaction dummyTransaction3 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key3");
+//      RecoveryTestUtil.prepareTransaction(dummyTransaction1);
+//      RecoveryTestUtil.prepareTransaction(dummyTransaction2);
+//      RecoveryTestUtil.prepareTransaction(dummyTransaction3);
+//
+//      List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
+//      transactions.add(dummyTransaction1);
+//      transactions.add(dummyTransaction2);
+//      transactions.add(dummyTransaction3);
+//
+//      assert tt0.getLocalTxCount() == 3;
+//
+//      for (DummyTransaction dTrans : transactions) {
+//         try {
+//            // will fail because of InDoubtWithCommitFailsTest.ForceFailureInterceptor()
+//            // remove this interceptor later to be able to force manually commit/rollback/forget via JMX (RHQ/jconsole)
+//            if (commit) {
+//               RecoveryTestUtil.commitTransaction(dTrans);
+//            } else {
+//               RecoveryTestUtil.rollbackTransaction(dTrans);
+//            }
+//            assert false : "exception expected";
+//         } catch (Exception e) {
+//            //expected -- induced failure
+//         }
+//      }
+//
+//      // REMOVE FAILING INTERCEPTOR from a cache
+//      System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
+//      ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
+//
+//   }
 
    @Override
    public void contextDestroyed(ServletContextEvent sce) {
