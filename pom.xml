@@ -32,19 +32,10 @@
             <version>6.0.0.Alpha3</version>
         </dependency>
 
-        <!-- THIS NEEDS TO BE DYNAMIC -->
-        <!--<dependency>-->
-            <!--<groupId>net.dataforte.infinispan</groupId>-->
-            <!--<artifactId>web</artifactId>-->
-            <!--<version>0.0.1-SNAPSHOT</version>-->
-            <!--<scope>system</scope>-->
-            <!--<systemPath>/home/tsykora/tmpdir/infinispan-query.jar</systemPath>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>6.0.0.Alpha2</version>
+            <version>6.0.0.Alpha3</version>
             <type>test-jar</type>
         </dependency>
 
