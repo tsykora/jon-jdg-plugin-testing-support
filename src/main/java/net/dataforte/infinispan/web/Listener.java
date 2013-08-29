@@ -4,6 +4,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.context.Flag;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
@@ -29,6 +30,7 @@ public class Listener implements ServletContextListener {
    private static final String CONTAINER3 = "container3";
    private static final String CACHE = "cache";
    EmbeddedCacheManager manager;
+   EmbeddedCacheManager managerQuery;
    EmbeddedCacheManager managerNycSite;
    EmbeddedCacheManager managerLonSite;
 
@@ -58,9 +60,9 @@ public class Listener implements ServletContextListener {
       configTrans.clustering().cacheMode(CacheMode.DIST_SYNC);
       configTrans.deadlockDetection().enable();
 
+      // for default cache
       ConfigurationBuilder configJmxOnly = new ConfigurationBuilder();
-      configJmxOnly.jmxStatistics().enable().indexing().indexLocalOnly(false).enable();
-
+      configJmxOnly.jmxStatistics();
 
       // FCS + Dist
       ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
@@ -73,14 +75,17 @@ public class Listener implements ServletContextListener {
       configInvalidation.jmxStatistics().enable();
       configInvalidation.clustering().cacheMode(CacheMode.INVALIDATION_ASYNC);
 
-
-      //
 //      ConfigurationBuilder configRollUps = new ConfigurationBuilder();
 //      configRollUps.jmxStatistics().enable();
 //      configRollUps.loaders().addStore;
 
-
       manager = new DefaultCacheManager(global.build(), configJmxOnly.build());
+
+      try {
+         managerQuery = new DefaultCacheManager("dynamic-indexing-distribution.xml");
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
 
       try {
          managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
@@ -105,14 +110,12 @@ public class Listener implements ServletContextListener {
       manager.defineConfiguration("default", configJmxOnly.build());
       manager.defineConfiguration("invalidationCache", configInvalidation.build());
 
-
       // some initial puts, these puts will cause:
       // INFO  [org.infinispan.jmx.CacheJmxRegistration] (MSC service thread 1-7) ISPN000031:
       // MBeans were successfully registered to the platform MBean server.
 
       // after that jon agent can recognize that and commit into JON view
       System.out.println("Putting entries into caches to register components into platform MBean server..... ");
-
 
       Cache c = manager.getCache("default");
       c.put("key1", "value1");
@@ -125,20 +128,10 @@ public class Listener implements ServletContextListener {
       cfcs.put("key1", "value1");
       cinval.put("key1", "value1");
 
-
-      // XSite stuff
-      // put into LON -- should be backed up (replicated) to NYC
-      Cache clon = managerLonSite.getCache("LonCache");
-      clon.put("keyLon1", "valueLon1");
-      clon.put("keyLon2", "valueLon2");
-
-      // put into NYC
-      Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
-      cnyc.put("keyNyc1", "valueNyc1"); // one simple put
-
-
+      // <editor-fold name=transactions>
       // **********************
       // In doubt transactions preparation stuff
+
 //      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
 //      try {
 //         testInDoubt(true, ctrans, rao);
@@ -147,14 +140,31 @@ public class Listener implements ServletContextListener {
 //         e.printStackTrace();
 //      }
 
-
-      // **********************
-      // Rolling upgrades stuff
-
-      // NOTE: Rolling upgrades may be still broken for ISPN Server because of changes in HotRod
+//      </editor-fold>
 
 
+      // XSite stuff
+      // put into LON -- should be backed up (replicated) to NYC
 
+      Cache clon = managerLonSite.getCache("LonCache");
+      clon.put("keyLon1", "valueLon1");
+      clon.put("keyLon2", "valueLon2");
+
+      // put into NYC
+      Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
+      cnyc.put("keyNyc1", "valueNyc1"); // one simple put
+
+      Cache queryCache = managerQuery.getCache();
+      queryCache.put("keyQuery1", "valueQuery1");
+      queryCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put("notIndexedKey1", "notIndexedValue1");
+
+      // <editor-fold name=RollUps>
+
+
+// **********************
+// Rolling upgrades stuff
+// NOTE: Rolling upgrades may be still broken for ISPN Server because of changes in HotRod
+//
 //      System.out.println("\n\n\n ROLLING UPGRADES SECTION ........... \n\n\n");
 //
 //
@@ -179,8 +189,8 @@ public class Listener implements ServletContextListener {
 //
 //
 //      System.out.println("\n\n\n" + managerForHrServer.getCacheNames().toString() + "\n\n\n");
-
-
+//
+//
 //      RemoteCacheStoreConfig remoteCacheStoreConfig = new RemoteCacheStoreConfig();
 //
 //      remoteCacheStoreConfig.setRemoteCacheName("defaultRollUps");
@@ -219,12 +229,12 @@ public class Listener implements ServletContextListener {
 //      for (String stat : remoteCacheStore.getRemoteCache().stats().getStatsMap().keySet()) {
 //         System.out.println("Statistic: " + stat + " ---> value: " + remoteCacheStore.getRemoteCache().stats().getStatsMap().get(stat));
 //      }
-
-
+//
+//
       // source cluster is remote cache store for me
       // this remoteCacheStore is SOURCE cache...
       // I can see it now using this
-
+//
 //      GlobalConfigurationBuilder globalTargetHr = GlobalConfigurationBuilder.defaultClusteredBuilder();
 //      globalTargetHr.transport().defaultTransport();
 //      globalTargetHr.globalJmxStatistics().jmxDomain("org.infinispan.target.hr").enable();
@@ -260,13 +270,13 @@ public class Listener implements ServletContextListener {
 //                               "\n\n");
 //      System.out.println("\n\n\n\nEntries in HR SOURCE CACHE after put to target: " + hrCache.getAdvancedCache().getStats().getTotalNumberOfEntries() +
 //                               "\n\n");
-
-
+//
+//
 //      System.out.println("\n\n\n\n\nREMOTE CACHE STORE STATISTICS --- after put 1 into target server");
 //      for (String stat : remoteCacheStore.getRemoteCache().stats().getStatsMap().keySet()) {
 //         System.out.println("Statistic: " + stat + " ---> value: " + remoteCacheStore.getRemoteCache().stats().getStatsMap().get(stat));
 //      }
-
+      // </editor-fold>
 
       sce.getServletContext().setAttribute(CONTAINER, manager.toString());
       sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
@@ -275,7 +285,6 @@ public class Listener implements ServletContextListener {
       sce.getServletContext().setAttribute("manager", manager);
       sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
       sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
-
    }
 
 
