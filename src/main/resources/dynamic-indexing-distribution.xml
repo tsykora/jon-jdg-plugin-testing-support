@@ -11,7 +11,6 @@
 
         <globalJmxStatistics
                 enabled="true"
-                cacheManagerName="QueryEnabledGrid-Dist"
                 allowDuplicateDomains="true"
                 />
 
@@ -100,46 +99,46 @@
     <!-- *************************************** -->
     <!--  Cache to store Lucene's file metadata  -->
     <!-- *************************************** -->
-    <namedCache
-            name="LuceneIndexesMetadata">
-        <clustering
-                mode="replication">
-            <stateTransfer
-                    fetchInMemoryState="true" />
-            <sync
-                    replTimeout="25000" />
-        </clustering>
-        <indexing enabled="false" />
-    </namedCache>
+    <!--<namedCache-->
+            <!--name="LuceneIndexesMetadata">-->
+        <!--<clustering-->
+                <!--mode="replication">-->
+            <!--<stateTransfer-->
+                    <!--fetchInMemoryState="true" />-->
+            <!--<sync-->
+                    <!--replTimeout="25000" />-->
+        <!--</clustering>-->
+        <!--<indexing enabled="false" />-->
+    <!--</namedCache>-->
 
     <!-- **************************** -->
     <!--  Cache to store Lucene data  -->
     <!-- **************************** -->
-    <namedCache
-            name="LuceneIndexesData">
-        <clustering
-                mode="distribution">
-            <stateTransfer
-                    fetchInMemoryState="true" />
-            <sync
-                    replTimeout="25000" />
-        </clustering>
-        <indexing enabled="false" />
-    </namedCache>
+    <!--<namedCache-->
+            <!--name="LuceneIndexesData">-->
+        <!--<clustering-->
+                <!--mode="distribution">-->
+            <!--<stateTransfer-->
+                    <!--fetchInMemoryState="true" />-->
+            <!--<sync-->
+                    <!--replTimeout="25000" />-->
+        <!--</clustering>-->
+        <!--<indexing enabled="false" />-->
+    <!--</namedCache>-->
 
     <!-- ***************************** -->
     <!--  Cache to store Lucene locks  -->
     <!-- ***************************** -->
-    <namedCache
-            name="LuceneIndexesLocking">
-        <clustering
-                mode="replication">
-            <stateTransfer
-                    fetchInMemoryState="true" />
-            <sync
-                    replTimeout="25000" />
-        </clustering>
-        <indexing enabled="false" />
-    </namedCache>
+    <!--<namedCache-->
+            <!--name="LuceneIndexesLocking">-->
+        <!--<clustering-->
+                <!--mode="replication">-->
+            <!--<stateTransfer-->
+                    <!--fetchInMemoryState="true" />-->
+            <!--<sync-->
+                    <!--replTimeout="25000" />-->
+        <!--</clustering>-->
+        <!--<indexing enabled="false" />-->
+    <!--</namedCache>-->
 
 </infinispan>

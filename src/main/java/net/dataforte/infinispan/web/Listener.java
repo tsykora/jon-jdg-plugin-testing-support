@@ -47,7 +47,7 @@ public class Listener implements ServletContextListener {
       // for xsite
       GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
       global.transport().defaultTransport();
-      global.globalJmxStatistics().enable();
+      global.globalJmxStatistics().enable().allowDuplicateDomains(true);
 
       // transactions with recovery management
       ConfigurationBuilder configTrans = new ConfigurationBuilder();
