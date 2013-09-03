@@ -87,20 +87,20 @@ public class Listener implements ServletContextListener {
          e.printStackTrace();
       }
 
-      try {
-         managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
-      } catch (IOException e) {
-         System.out.println("********** PROBLEM while parsing xsite-test-lon.xml *************");
-         e.printStackTrace();
-      }
-
-      // this is LON and is backed up to NYC
-      try {
-         managerNycSite = new DefaultCacheManager("xsite-test-nyc.xml");
-      } catch (IOException e) {
-         System.out.println("********** PROBLEM xsite-test-nyc.xml *************");
-         e.printStackTrace();
-      }
+//      try {
+//         managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
+//      } catch (IOException e) {
+//         System.out.println("********** PROBLEM while parsing xsite-test-lon.xml *************");
+//         e.printStackTrace();
+//      }
+//
+//      // this is LON and is backed up to NYC
+//      try {
+//         managerNycSite = new DefaultCacheManager("xsite-test-nyc.xml");
+//      } catch (IOException e) {
+//         System.out.println("********** PROBLEM xsite-test-nyc.xml *************");
+//         e.printStackTrace();
+//      }
 
       // way how to access protocol in Transport
 //      manager.getTransport().getChannel().getProtocolStack().addProtocol();
@@ -146,13 +146,13 @@ public class Listener implements ServletContextListener {
       // XSite stuff
       // put into LON -- should be backed up (replicated) to NYC
 
-      Cache clon = managerLonSite.getCache("LonCache");
-      clon.put("keyLon1", "valueLon1");
-      clon.put("keyLon2", "valueLon2");
-
-      // put into NYC
-      Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
-      cnyc.put("keyNyc1", "valueNyc1"); // one simple put
+//      Cache clon = managerLonSite.getCache("LonCache");
+//      clon.put("keyLon1", "valueLon1");
+//      clon.put("keyLon2", "valueLon2");
+//
+//      // put into NYC
+//      Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
+//      cnyc.put("keyNyc1", "valueNyc1"); // one simple put
 
       Cache queryCache = managerQuery.getCache();
       queryCache.put("keyQuery1", "valueQuery1");
@@ -279,12 +279,12 @@ public class Listener implements ServletContextListener {
       // </editor-fold>
 
       sce.getServletContext().setAttribute(CONTAINER, manager.toString());
-      sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
-      sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
+//      sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
+//      sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
 
       sce.getServletContext().setAttribute("manager", manager);
-      sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
-      sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
+//      sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
+//      sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
    }
 
 
@@ -342,8 +342,8 @@ public class Listener implements ServletContextListener {
       sce.getServletContext().removeAttribute(CONTAINER3);
 
       manager.stop();
-      managerLonSite.stop();
-      managerNycSite.stop();
+//      managerLonSite.stop();
+//      managerNycSite.stop();
 //      managerForHrServer.stop();
 //      managerForHrTargetServer.stop();
    }
