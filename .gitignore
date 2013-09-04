@@ -1,5 +1,8 @@
 .gitignore~
 
+delDeployment.sh
+rmBuildDeploy.sh
+
 *.class
 
 # Package Files #

@@ -38,11 +38,6 @@
                 concurrencyLevel="500"
                 useLockStriping="false" />
 
-        <!-- This element specifies that the cache is clustered. modes supported: distribution
-            (d), replication (r) or invalidation (i). Don't use invalidation to store Lucene indexes (as
-            with Hibernate Search DirectoryProvider). Replication is recommended for best performance of
-            Lucene indexes, but make sure you have enough memory to store the index in your heap.
-            Also distribution scales much better than replication on high number of nodes in the cluster. -->
         <clustering
                 mode="distribution">
 
@@ -84,61 +79,5 @@
             </properties>
         </indexing>
     </default>
-
-
-    <!-- ******************************************************************************* -->
-    <!-- Individually configured "named" caches.                                         -->
-    <!--                                                                                 -->
-    <!-- While default configuration happens to be fine with similar settings across the -->
-    <!-- three caches, they should generally be different in a production environment.   -->
-    <!--                                                                                 -->
-    <!-- Current settings could easily lead to OutOfMemory exception as a CacheStore     -->
-    <!-- should be enabled, and maybe distribution is more suited for LuceneIndexesData. -->
-    <!-- ******************************************************************************* -->
-
-    <!-- *************************************** -->
-    <!--  Cache to store Lucene's file metadata  -->
-    <!-- *************************************** -->
-    <!--<namedCache-->
-            <!--name="LuceneIndexesMetadata">-->
-        <!--<clustering-->
-                <!--mode="replication">-->
-            <!--<stateTransfer-->
-                    <!--fetchInMemoryState="true" />-->
-            <!--<sync-->
-                    <!--replTimeout="25000" />-->
-        <!--</clustering>-->
-        <!--<indexing enabled="false" />-->
-    <!--</namedCache>-->
-
-    <!-- **************************** -->
-    <!--  Cache to store Lucene data  -->
-    <!-- **************************** -->
-    <!--<namedCache-->
-            <!--name="LuceneIndexesData">-->
-        <!--<clustering-->
-                <!--mode="distribution">-->
-            <!--<stateTransfer-->
-                    <!--fetchInMemoryState="true" />-->
-            <!--<sync-->
-                    <!--replTimeout="25000" />-->
-        <!--</clustering>-->
-        <!--<indexing enabled="false" />-->
-    <!--</namedCache>-->
-
-    <!-- ***************************** -->
-    <!--  Cache to store Lucene locks  -->
-    <!-- ***************************** -->
-    <!--<namedCache-->
-            <!--name="LuceneIndexesLocking">-->
-        <!--<clustering-->
-                <!--mode="replication">-->
-            <!--<stateTransfer-->
-                    <!--fetchInMemoryState="true" />-->
-            <!--<sync-->
-                    <!--replTimeout="25000" />-->
-        <!--</clustering>-->
-        <!--<indexing enabled="false" />-->
-    <!--</namedCache>-->
 
 </infinispan>
