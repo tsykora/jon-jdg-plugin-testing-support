@@ -167,13 +167,13 @@ public class Listener implements ServletContextListener {
       // **********************
       // In doubt transactions preparation stuff
 
-      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
-      try {
-         testInDoubt(true, ctrans, rao);
-      } catch (XAException e) {
-         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
-         e.printStackTrace();
-      }
+//      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
+//      try {
+//         testInDoubt(true, ctrans, rao);
+//      } catch (XAException e) {
+//         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
+//         e.printStackTrace();
+//      }
 //    </editor-fold name=transactions>
 
       // <editor-fold name=RollUps>
