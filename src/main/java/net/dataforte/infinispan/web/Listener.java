@@ -1,5 +1,16 @@
 package net.dataforte.infinispan.web;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAException;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -14,19 +25,13 @@ import org.infinispan.transaction.TransactionTable;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.infinispan.transaction.tm.DummyTransaction;
 import org.infinispan.transaction.tm.DummyTransactionManager;
+import org.infinispan.transaction.xa.GlobalTransaction;
+import org.infinispan.transaction.xa.TransactionFactory;
 import org.infinispan.transaction.xa.recovery.RecoveryAdminOperations;
 import org.infinispan.tx.recovery.RecoveryTestUtil;
 import org.infinispan.tx.recovery.admin.InDoubtWithCommitFailsTest;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAException;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 /**
  * Infinispan configuration wizard
@@ -35,6 +40,9 @@ import java.util.Properties;
  */
 @WebListener()
 public class Listener implements ServletContextListener {
+
+   private static final Log log = LogFactory.getLog(Listener.class);
+
    private static final String CONTAINER = "container";
    private static final String CONTAINER2 = "container2";
    private static final String CONTAINER3 = "container3";
@@ -75,10 +83,10 @@ public class Listener implements ServletContextListener {
       configJmxOnly.jmxStatistics();
 
       // FCS + Dist
-      ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
-      configFCSdist.jmxStatistics().enable();
-      configFCSdist.loaders().passivation(true).addFileCacheStore().location("/tmp/");
-      configFCSdist.clustering().cacheMode(CacheMode.DIST_ASYNC).l1().enable();
+//      ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
+//      configFCSdist.jmxStatistics().enable();
+//      configFCSdist.loaders().passivation(true).addFileCacheStore().location("/tmp/");
+//      configFCSdist.clustering().cacheMode(CacheMode.DIST_ASYNC).l1().enable();
 
       // Invalidation
       ConfigurationBuilder configInvalidation = new ConfigurationBuilder();
@@ -127,7 +135,7 @@ public class Listener implements ServletContextListener {
       // manager.getTransport().getChannel().getProtocolStack().addProtocol();
 
       manager.defineConfiguration("transactionalCache", configTrans.build());
-      manager.defineConfiguration("fcsDistCache", configFCSdist.build());
+//      manager.defineConfiguration("fcsDistCache", configFCSdist.build());
       manager.defineConfiguration("default", configJmxOnly.build());
       manager.defineConfiguration("invalidationCache", configInvalidation.build());
       manager.defineConfiguration("___default", configQueryIndexer.build());
@@ -143,11 +151,11 @@ public class Listener implements ServletContextListener {
       c.put("key1", "value1");
 
       Cache ctrans = manager.getCache("transactionalCache");
-      Cache cfcs = manager.getCache("fcsDistCache");
+//      Cache cfcs = manager.getCache("fcsDistCache");
       Cache cinval = manager.getCache("invalidationCache");
 
       ctrans.put("key1", "value1");
-      cfcs.put("key1", "value1");
+//      cfcs.put("key1", "value1");
       cinval.put("key1", "value1");
 
       // XSite stuff
@@ -165,20 +173,20 @@ public class Listener implements ServletContextListener {
 
       // <editor-fold name=transactions>
       // **********************
-      // In doubt transactions preparation stuff
+      // In doubt transactions preparation stuff - this is causing failures during deployment on EAPs in domain mode.
+      // Manually uncomment it, build was and deploy it on one standalone server and try it manually via JON gui.
+      // Operation getInDoubtTransactions should report failed transactions.
 
-//      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
-//      try {
-//         testInDoubt(true, ctrans, rao);
-//      } catch (XAException e) {
-//         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
-//         e.printStackTrace();
-//      }
+      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
+      try {
+         testInDoubt(true, ctrans, rao);
+      } catch (XAException e) {
+         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
+         e.printStackTrace();
+      }
 //    </editor-fold name=transactions>
 
       // <editor-fold name=RollUps>
-
-
 // **********************
 // Rolling upgrades stuff
 // NOTE: Rolling upgrades may be still broken for ISPN Server because of changes in HotRod
@@ -324,6 +332,11 @@ public class Listener implements ServletContextListener {
       RecoveryTestUtil.prepareTransaction(dummyTransaction2);
       RecoveryTestUtil.prepareTransaction(dummyTransaction3);
 
+      log.info("\n\n\n getXid():" + dummyTransaction1.getXid());
+      log.info("GlobalTransactionId: " + dummyTransaction2.getXid().getGlobalTransactionId());
+      log.info("GlobalTransactionId toString(): " + dummyTransaction2.getXid().getGlobalTransactionId().toString());
+      log.info("\n\n\n");
+
       List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
       transactions.add(dummyTransaction1);
       transactions.add(dummyTransaction2);
@@ -340,6 +353,9 @@ public class Listener implements ServletContextListener {
             } else {
                RecoveryTestUtil.rollbackTransaction(dTrans);
             }
+
+
+
             assert false : "exception expected";
          } catch (Exception e) {
             //expected -- induced failure
@@ -349,6 +365,17 @@ public class Listener implements ServletContextListener {
       // REMOVE FAILING INTERCEPTOR from a cache
       System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
       ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
+
+
+
+
+      GlobalTransaction globalTx = TransactionFactory.TxFactoryEnum.DLD_RECOVERY_XA.newGlobalTransaction();
+      dummyTransaction1.getXid().getGlobalTransactionId(); //??
+
+
+
+
+
    }
 
    @Override
