@@ -20,8 +20,8 @@
 
     Using: <%=Version.printVersion()%><br/>
     CacheManager instance: <%=application.getAttribute("container")%><br/>
-    CacheManagerLon instance: <%=application.getAttribute("container2")%><br/>
-    CacheManagerNyc instance: <%=application.getAttribute("container3")%><br/>
+    <%--CacheManagerLon instance: <%=application.getAttribute("container2")%><br/>--%>
+    <%--CacheManagerNyc instance: <%=application.getAttribute("container3")%><br/>--%>
 
     <%
         EmbeddedCacheManager manager = (EmbeddedCacheManager) application.getAttribute("manager");
