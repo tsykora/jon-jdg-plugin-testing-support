@@ -35,7 +35,7 @@ import org.infinispan.util.logging.LogFactory;
 
 /**
  * Infinispan configuration wizard
- *
+ * <p/>
  * // TODO: differentiate cluster name of nodes deployed on same host
  *
  * @author tsykora
@@ -43,64 +43,57 @@ import org.infinispan.util.logging.LogFactory;
 @WebListener()
 public class Listener implements ServletContextListener {
 
-   private static final Log log = LogFactory.getLog(Listener.class);
+    private static final Log log = LogFactory.getLog(Listener.class);
 
-   private static final String CONTAINER = "container";
-   private static final String CONTAINER2 = "container2";
-   private static final String CONTAINER3 = "container3";
-   private static final String CACHE = "cache";
-   EmbeddedCacheManager manager;
+    private static final String CONTAINER = "container";
+    private static final String CONTAINER2 = "container2";
+    private static final String CONTAINER3 = "container3";
+    private static final String CACHE = "cache";
 
-   EmbeddedCacheManager managerNycSite;
-   EmbeddedCacheManager managerLonSite;
+    private static Boolean deployTransactionalCache = false;
+
+    EmbeddedCacheManager manager;
+    EmbeddedCacheManager managerNycSite;
+    EmbeddedCacheManager managerLonSite;
+
 
 //   EmbeddedCacheManager managerForHrServer;
 //   EmbeddedCacheManager managerForHrTargetServer;
 
-   @Override
-   public void contextInitialized(ServletContextEvent sce) {
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
 
 //      GlobalConfigurationBuilder global = new GlobalConfigurationBuilder();
 //      global.transport().defaultTransport();
 //      global.globalJmxStatistics().enable();
 
-      // for xsite
-      GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
-      global.transport().defaultTransport();
-      global.globalJmxStatistics().enable();
-
-      // transactions with recovery management
-      ConfigurationBuilder configTrans = new ConfigurationBuilder();
-             configTrans.jmxStatistics().enable();
-             configTrans.transaction().transactionManagerLookup(new org.infinispan.tx.recovery.RecoveryDummyTransactionManagerLookup()).
-                   transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
-             configTrans.transaction().useSynchronization(false);
-      configTrans.transaction().recovery().enable();
-      configTrans.locking().useLockStriping(false);
-      configTrans.clustering().cacheMode(CacheMode.DIST_SYNC);
-      configTrans.deadlockDetection().enable();
-
-      // for default cache
-      ConfigurationBuilder configJmxOnly = new ConfigurationBuilder();
-      configJmxOnly.jmxStatistics();
+        // for xsite
+        GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
+        global.transport().defaultTransport();
+        global.globalJmxStatistics().enable();
 
 
-      // FCS + Dist
-      ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
-      configFCSdist.jmxStatistics().enable();
-      configFCSdist.persistence().passivation(true).addSingleFileStore().location("/tmp/");
-      configFCSdist.clustering().cacheMode(CacheMode.DIST_ASYNC).l1().enable();
+        // for default cache
+        ConfigurationBuilder configJmxOnly = new ConfigurationBuilder();
+        configJmxOnly.jmxStatistics();
 
-      // Invalidation
-      ConfigurationBuilder configInvalidation = new ConfigurationBuilder();
-      configInvalidation.jmxStatistics().enable();
-      configInvalidation.clustering().cacheMode(CacheMode.INVALIDATION_ASYNC);
+
+        // FCS + Dist
+        ConfigurationBuilder configFCSdist = new ConfigurationBuilder();
+        configFCSdist.jmxStatistics().enable();
+        configFCSdist.persistence().passivation(true).addSingleFileStore().location("/tmp/");
+        configFCSdist.clustering().cacheMode(CacheMode.DIST_ASYNC).l1().enable();
+
+        // Invalidation
+        ConfigurationBuilder configInvalidation = new ConfigurationBuilder();
+        configInvalidation.jmxStatistics().enable();
+        configInvalidation.clustering().cacheMode(CacheMode.INVALIDATION_ASYNC);
 
 //      ConfigurationBuilder configRollUps = new ConfigurationBuilder();
 //      configRollUps.jmxStatistics().enable();
 //      configRollUps.loaders().addStore;
 
-      manager = new DefaultCacheManager(global.build(), configJmxOnly.build());
+        manager = new DefaultCacheManager(global.build(), configJmxOnly.build());
 
 //      try {
 //         managerQuery = new DefaultCacheManager("dynamic-indexing-distribution.xml");
@@ -108,88 +101,105 @@ public class Listener implements ServletContextListener {
 //         e.printStackTrace();
 //      }
 
-      final Properties properties = new Properties();
-      properties.put("default.directory_provider", "ram");
-      properties.put("lucene_version", "LUCENE_CURRENT");
+        final Properties properties = new Properties();
+        properties.put("default.directory_provider", "ram");
+        properties.put("lucene_version", "LUCENE_CURRENT");
 
-      ConfigurationBuilder configQueryIndexer = new ConfigurationBuilder();
-      configQueryIndexer.jmxStatistics().enable();
-      configQueryIndexer.locking().useLockStriping(false);
-      configQueryIndexer.clustering().cacheMode(CacheMode.DIST_SYNC);
-      configQueryIndexer.indexing().enable().indexLocalOnly(true).withProperties(properties);
+        ConfigurationBuilder configQueryIndexer = new ConfigurationBuilder();
+        configQueryIndexer.jmxStatistics().enable();
+        configQueryIndexer.locking().useLockStriping(false);
+        configQueryIndexer.clustering().cacheMode(CacheMode.DIST_SYNC);
+        configQueryIndexer.indexing().enable().indexLocalOnly(true).withProperties(properties);
 
 
-      try {
-         managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
-      } catch (IOException e) {
-         System.out.println("********** PROBLEM while parsing xsite-test-lon.xml *************");
-         e.printStackTrace();
-      }
+        try {
+            managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
+        } catch (IOException e) {
+            System.out.println("********** PROBLEM while parsing xsite-test-lon.xml *************");
+            e.printStackTrace();
+        }
 
-      // this is LON and is backed up to NYC
-      try {
-         managerNycSite = new DefaultCacheManager("xsite-test-nyc.xml");
-      } catch (IOException e) {
-         System.out.println("********** PROBLEM xsite-test-nyc.xml *************");
-         e.printStackTrace();
-      }
+        // this is LON and is backed up to NYC
+        try {
+            managerNycSite = new DefaultCacheManager("xsite-test-nyc.xml");
+        } catch (IOException e) {
+            System.out.println("********** PROBLEM xsite-test-nyc.xml *************");
+            e.printStackTrace();
+        }
 
-      // a way how to access protocol in Transport
-      // manager.getTransport().getChannel().getProtocolStack().addProtocol();
+        // a way how to access protocol in Transport
+        // manager.getTransport().getChannel().getProtocolStack().addProtocol();
 
-      manager.defineConfiguration("transactionalCache", configTrans.build());
-      manager.defineConfiguration("fcsDistCache", configFCSdist.build());
-      manager.defineConfiguration("default", configJmxOnly.build());
-      manager.defineConfiguration("invalidationCache", configInvalidation.build());
-      manager.defineConfiguration("___default", configQueryIndexer.build());
 
-      // some initial puts, these puts will cause:
-      // INFO  [org.infinispan.jmx.CacheJmxRegistration] (MSC service thread 1-7) ISPN000031:
-      // MBeans were successfully registered to the platform MBean server.
+        manager.defineConfiguration("fcsDistCache", configFCSdist.build());
+        manager.defineConfiguration("default", configJmxOnly.build());
+        manager.defineConfiguration("invalidationCache", configInvalidation.build());
+        manager.defineConfiguration("___default", configQueryIndexer.build());
 
-      // after that jon agent can recognize that and commit into JON view
-      System.out.println("Putting entries into caches to register components into platform MBean server..... ");
+        // some initial puts, these puts will cause:
+        // INFO  [org.infinispan.jmx.CacheJmxRegistration] (MSC service thread 1-7) ISPN000031:
+        // MBeans were successfully registered to the platform MBean server.
 
-      Cache c = manager.getCache("default");
-      c.put("key1", "value1");
+        // after that jon agent can recognize that and commit into JON view
+        System.out.println("Putting entries into caches to register components into platform MBean server..... ");
 
-      Cache ctrans = manager.getCache("transactionalCache");
-      Cache cfcs = manager.getCache("fcsDistCache");
-      Cache cinval = manager.getCache("invalidationCache");
+        Cache c = manager.getCache("default");
+        c.put("key1", "value1");
 
-      ctrans.put("key1", "value1");
-      cfcs.put("key1", "value1");
-      cinval.put("key1", "value1");
 
-      // XSite stuff
-      // put into LON -- should be backed up (replicated) to NYC
-      Cache clon = managerLonSite.getCache("LonCache");
-      clon.put("keyLon1", "valueLon1");
-      clon.put("keyLon2", "valueLon2");
-      // put into NYC
-      Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
-      cnyc.put("keyNyc1", "valueNyc1"); // one simple put
+        Cache cfcs = manager.getCache("fcsDistCache");
+        Cache cinval = manager.getCache("invalidationCache");
 
-      Cache queryCache = manager.getCache("___default");
-      queryCache.put("keyQuery1", "valueQuery1");
-      queryCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put("notIndexedKey1", "notIndexedValue1");
 
-      // <editor-fold name=transactions>
-      // **********************
-      // In doubt transactions preparation stuff - this is causing failures during deployment on EAPs in domain mode.
-      // Manually uncomment it, build was and deploy it on one standalone server and try it manually via JON gui.
-      // Operation getInDoubtTransactions should report failed transactions.
+        cfcs.put("key1", "value1");
+        cinval.put("key1", "value1");
 
-      RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
-      try {
-         testInDoubt(true, ctrans, rao);
-      } catch (XAException e) {
-         System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
-         e.printStackTrace();
-      }
-//    </editor-fold name=transactions>
+        // XSite stuff
+        // put into LON -- should be backed up (replicated) to NYC
+        Cache clon = managerLonSite.getCache("LonCache");
+        clon.put("keyLon1", "valueLon1");
+        clon.put("keyLon2", "valueLon2");
+        // put into NYC
+        Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
+        cnyc.put("keyNyc1", "valueNyc1"); // one simple put
 
-      // <editor-fold name=RollUps>
+        Cache queryCache = manager.getCache("___default");
+        queryCache.put("keyQuery1", "valueQuery1");
+        queryCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put("notIndexedKey1", "notIndexedValue1");
+
+
+        if (deployTransactionalCache) {
+            // transactions with recovery management
+            ConfigurationBuilder configTrans = new ConfigurationBuilder();
+            configTrans.jmxStatistics().enable();
+            configTrans.transaction().transactionManagerLookup(new org.infinispan.tx.recovery.RecoveryDummyTransactionManagerLookup()).
+                    transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
+            configTrans.transaction().useSynchronization(false);
+            configTrans.transaction().recovery().enable();
+            configTrans.locking().useLockStriping(false);
+            configTrans.clustering().cacheMode(CacheMode.DIST_SYNC);
+            configTrans.deadlockDetection().enable();
+
+            manager.defineConfiguration("transactionalCache", configTrans.build());
+            Cache ctrans = manager.getCache("transactionalCache");
+
+            // **********************
+            // In doubt transactions preparation stuff - this is causing failures during deployment on EAPs in domain mode.
+            // Manually uncomment it, build was and deploy it on one standalone server and try it manually via JON gui.
+            // Operation getInDoubtTransactions should report failed transactions.
+
+            RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
+            try {
+                testInDoubt(true, ctrans, rao);
+            } catch (XAException e) {
+                System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
+                e.printStackTrace();
+            }
+
+            ctrans.put("key1", "value1");
+        }
+
+        // <editor-fold name=RollUps>
 // **********************
 // Rolling upgrades stuff
 // NOTE: Rolling upgrades may be still broken for ISPN Server because of changes in HotRod
@@ -260,9 +270,9 @@ public class Listener implements ServletContextListener {
 //      }
 //
 //
-      // source cluster is remote cache store for me
-      // this remoteCacheStore is SOURCE cache...
-      // I can see it now using this
+        // source cluster is remote cache store for me
+        // this remoteCacheStore is SOURCE cache...
+        // I can see it now using this
 //
 //      GlobalConfigurationBuilder globalTargetHr = GlobalConfigurationBuilder.defaultClusteredBuilder();
 //      globalTargetHr.transport().defaultTransport();
@@ -305,93 +315,93 @@ public class Listener implements ServletContextListener {
 //      for (String stat : remoteCacheStore.getRemoteCache().stats().getStatsMap().keySet()) {
 //         System.out.println("Statistic: " + stat + " ---> value: " + remoteCacheStore.getRemoteCache().stats().getStatsMap().get(stat));
 //      }
-      // </editor-fold>
+        // </editor-fold>
 
-      sce.getServletContext().setAttribute(CONTAINER, manager.toString());
-      sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
-      sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
+        sce.getServletContext().setAttribute(CONTAINER, manager.toString());
+        sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
+        sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
 
-      sce.getServletContext().setAttribute("manager", manager);
-      sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
-      sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
-   }
-
-
-   private void testInDoubt(boolean commit, Cache ctrans, RecoveryAdminOperations recoveryAdminOperations) throws XAException {
-
-      assert recoveryAdminOperations.showInDoubtTransactions().isEmpty();
-      TransactionTable tt0 = ctrans.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
+        sce.getServletContext().setAttribute("manager", manager);
+        sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
+        sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
+    }
 
 
-      // need to intercept failure during commands
-      ctrans.getAdvancedCache().addInterceptorBefore(new InDoubtWithCommitFailsTest.ForceFailureInterceptor(),
-                                                     InvocationContextInterceptor.class);
+    private void testInDoubt(boolean commit, Cache ctrans, RecoveryAdminOperations recoveryAdminOperations) throws XAException {
+
+        assert recoveryAdminOperations.showInDoubtTransactions().isEmpty();
+        TransactionTable tt0 = ctrans.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
 
 
-      DummyTransaction dummyTransaction1 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key1");
-      DummyTransaction dummyTransaction2 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key2");
-      DummyTransaction dummyTransaction3 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key3");
-      RecoveryTestUtil.prepareTransaction(dummyTransaction1);
-      RecoveryTestUtil.prepareTransaction(dummyTransaction2);
-      RecoveryTestUtil.prepareTransaction(dummyTransaction3);
+        // need to intercept failure during commands
+        ctrans.getAdvancedCache().addInterceptorBefore(new InDoubtWithCommitFailsTest.ForceFailureInterceptor(),
+                InvocationContextInterceptor.class);
 
-      log.info("\n\n\n getXid():" + dummyTransaction1.getXid());
-      log.info("GlobalTransactionId: " + dummyTransaction2.getXid().getGlobalTransactionId());
-      log.info("GlobalTransactionId toString(): " + dummyTransaction2.getXid().getGlobalTransactionId().toString());
-      log.info("\n\n\n");
 
-      List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
-      transactions.add(dummyTransaction1);
-      transactions.add(dummyTransaction2);
-      transactions.add(dummyTransaction3);
+        DummyTransaction dummyTransaction1 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key1");
+        DummyTransaction dummyTransaction2 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key2");
+        DummyTransaction dummyTransaction3 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key3");
+        RecoveryTestUtil.prepareTransaction(dummyTransaction1);
+        RecoveryTestUtil.prepareTransaction(dummyTransaction2);
+        RecoveryTestUtil.prepareTransaction(dummyTransaction3);
 
-      assert tt0.getLocalTxCount() == 3;
+        log.info("\n\n\n getXid():" + dummyTransaction1.getXid());
+        log.info("GlobalTransactionId: " + dummyTransaction2.getXid().getGlobalTransactionId());
+        log.info("GlobalTransactionId toString(): " + dummyTransaction2.getXid().getGlobalTransactionId().toString());
+        log.info("\n\n\n");
 
-      for (DummyTransaction dTrans : transactions) {
-         try {
-            // will fail because of InDoubtWithCommitFailsTest.ForceFailureInterceptor()
-            // remove this interceptor later to be able to force manually commit/rollback/forget via JMX (RHQ/jconsole)
-            if (commit) {
-               RecoveryTestUtil.commitTransaction(dTrans);
-            } else {
-               RecoveryTestUtil.rollbackTransaction(dTrans);
+        List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
+        transactions.add(dummyTransaction1);
+        transactions.add(dummyTransaction2);
+        transactions.add(dummyTransaction3);
+
+        assert tt0.getLocalTxCount() == 3;
+
+        for (DummyTransaction dTrans : transactions) {
+            try {
+                // will fail because of InDoubtWithCommitFailsTest.ForceFailureInterceptor()
+                // remove this interceptor later to be able to force manually commit/rollback/forget via JMX (RHQ/jconsole)
+                if (commit) {
+                    RecoveryTestUtil.commitTransaction(dTrans);
+                } else {
+                    RecoveryTestUtil.rollbackTransaction(dTrans);
+                }
+
+                assert false : "exception expected";
+            } catch (Exception e) {
+                //expected -- induced failure
             }
+        }
 
-            assert false : "exception expected";
-         } catch (Exception e) {
-            //expected -- induced failure
-         }
-      }
+        // REMOVE FAILING INTERCEPTOR from a cache
+        System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
+        ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
 
-      // REMOVE FAILING INTERCEPTOR from a cache
-      System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
-      ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
+        GlobalTransaction globalTx = TransactionFactory.TxFactoryEnum.DLD_RECOVERY_XA.newGlobalTransaction();
+        dummyTransaction1.getXid().getGlobalTransactionId(); //??
 
-      GlobalTransaction globalTx = TransactionFactory.TxFactoryEnum.DLD_RECOVERY_XA.newGlobalTransaction();
-      dummyTransaction1.getXid().getGlobalTransactionId(); //??
+    }
 
-   }
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        sce.getServletContext().removeAttribute(CACHE);
+        sce.getServletContext().removeAttribute(CONTAINER);
+        sce.getServletContext().removeAttribute(CONTAINER2);
+        sce.getServletContext().removeAttribute(CONTAINER3);
 
-   @Override
-   public void contextDestroyed(ServletContextEvent sce) {
-      sce.getServletContext().removeAttribute(CACHE);
-      sce.getServletContext().removeAttribute(CONTAINER);
-      sce.getServletContext().removeAttribute(CONTAINER2);
-      sce.getServletContext().removeAttribute(CONTAINER3);
-
-      manager.stop();
-      managerLonSite.stop();
-      managerNycSite.stop();
+        manager.stop();
+        managerLonSite.stop();
+        managerNycSite.stop();
 //      managerForHrServer.stop();
 //      managerForHrTargetServer.stop();
-   }
+    }
 }
 
 class RecoveryDummyTransactionManagerLookup implements TransactionManagerLookup {
-   @Override
-   public synchronized TransactionManager getTransactionManager() throws Exception {
-      DummyTransactionManager dtm = new DummyTransactionManager();
-      dtm.setUseXaXid(true);
-      return dtm;
-   }
+    @Override
+    public synchronized TransactionManager getTransactionManager() throws Exception {
+        DummyTransactionManager dtm = new DummyTransactionManager();
+        dtm.setUseXaXid(true);
+        return dtm;
+    }
 }
