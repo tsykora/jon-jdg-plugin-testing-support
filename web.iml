@@ -22,16 +22,16 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.infinispan:infinispan-core:6.0.3.Final-redhat-3" level="project" />
-    <orderEntry type="library" name="Maven: org.infinispan:infinispan-commons:6.0.3.Final-redhat-3" level="project" />
+    <orderEntry type="library" name="Maven: org.infinispan:infinispan-core:6.1.0.ER1-redhat-1" level="project" />
+    <orderEntry type="library" name="Maven: org.infinispan:infinispan-commons:6.1.0.ER1-redhat-1" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.logging:jboss-logging:3.1.2.GA-redhat-1" level="project" />
     <orderEntry type="library" name="Maven: org.jgroups:jgroups:3.4.3.Final-redhat-1" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.16-redhat-2" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec:1.0.1.Final-redhat-2" level="project" />
-    <orderEntry type="library" name="Maven: org.jboss.marshalling:jboss-marshalling-river:1.4.2.Final-redhat-2" level="project" />
-    <orderEntry type="library" name="Maven: org.jboss.marshalling:jboss-marshalling:1.4.2.Final-redhat-2" level="project" />
-    <orderEntry type="library" name="Maven: org.infinispan:infinispan-query:6.0.3.Final-redhat-3" level="project" />
-    <orderEntry type="library" name="Maven: org.infinispan:infinispan-query-dsl:6.0.3.Final-redhat-3" level="project" />
+    <orderEntry type="library" name="Maven: org.jboss.marshalling:jboss-marshalling-river:1.4.5.Final-redhat-1" level="project" />
+    <orderEntry type="library" name="Maven: org.jboss.marshalling:jboss-marshalling:1.4.5.Final-redhat-1" level="project" />
+    <orderEntry type="library" name="Maven: org.infinispan:infinispan-query:6.1.0.ER1-redhat-1" level="project" />
+    <orderEntry type="library" name="Maven: org.infinispan:infinispan-query-dsl:6.1.0.ER1-redhat-1" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate.hql:hibernate-hql-parser:1.0.0.Alpha5-redhat-1" level="project" />
     <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.4" level="project" />
     <orderEntry type="library" name="Maven: org.antlr:stringtemplate:3.2.1-redhat-1" level="project" />
@@ -68,8 +68,8 @@
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-facet:3.6.2-redhat-4" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final-redhat-2" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-search-infinispan:4.4.0.Final-redhat-3" level="project" />
-    <orderEntry type="library" name="Maven: org.infinispan:infinispan-lucene-directory:6.0.3.Final-redhat-3" level="project" />
-    <orderEntry type="library" name="Maven: org.infinispan:infinispan-core:test-jar:tests:6.0.3.Final-redhat-3" level="project" />
+    <orderEntry type="library" name="Maven: org.infinispan:infinispan-lucene-directory:6.1.0.ER1-redhat-1" level="project" />
+    <orderEntry type="library" name="Maven: org.infinispan:infinispan-core:test-jar:tests:6.1.0.ER1-redhat-1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:javax.servlet-api:3.0.1" level="project" />
   </component>
 </module>
