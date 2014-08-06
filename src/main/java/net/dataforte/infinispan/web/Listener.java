@@ -317,6 +317,33 @@ public class Listener implements ServletContextListener {
 //      }
         // </editor-fold>
 
+
+
+        // example configuration of SingleFileStore (unused here)
+//        ConfigurationBuilder singleFileStoreExample = new ConfigurationBuilder();
+//        singleFileStoreExample.persistence()
+//                .passivation(false)
+////                .shared(false)
+////                .preload(true)
+//                .addSingleFileStore()
+//                .shared(false)
+//                .preload(true)
+//                .fetchPersistentState(true)
+//                        //                .purgerThreads(3)
+//                        //                .purgeSynchronously(true)
+//                .ignoreModifications(false)
+//                .purgeOnStartup(false)
+//                .location(System.getProperty("java.io.tmpdir"))
+//                .async()
+//                .enabled(true)
+//                .flushLockTimeout(15000)
+//                .threadPoolSize(5)
+//                .singleton() // Changed from singletonStore()
+//                .enabled(true)
+//                .pushStateWhenCoordinator(true)
+//                .pushStateTimeout(20000);
+
+
         sce.getServletContext().setAttribute(CONTAINER, manager.toString());
         sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
         sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());

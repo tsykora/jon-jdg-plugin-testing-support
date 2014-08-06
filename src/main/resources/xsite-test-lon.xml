@@ -53,6 +53,27 @@
             <backupFor/>
         </sites>
         <jmxStatistics enabled="true"/>
+
+        <!-- example configuration of singleFileStore -->
+        <!--<persistence passivation="false">-->
+            <!--<singleFile-->
+                    <!--shared="false"-->
+                    <!--preload="true"-->
+                    <!--fetchPersistentState="true"-->
+                    <!--ignoreModifications="false"-->
+                    <!--purgeOnStartup="false"-->
+                    <!--location="${java.io.tmpdir}" >-->
+                <!--<async-->
+                        <!--enabled="true"-->
+                        <!--flushLockTimeout="15000"-->
+                        <!--threadPoolSize="5" />-->
+                <!--<singleton-->
+                        <!--enabled="true"-->
+                        <!--pushStateWhenCoordinator="true"-->
+                        <!--pushStateTimeout="20000" />-->
+            <!--</singleFile>-->
+        <!--</persistence>-->
+
     </namedCache>
 
 </infinispan>
