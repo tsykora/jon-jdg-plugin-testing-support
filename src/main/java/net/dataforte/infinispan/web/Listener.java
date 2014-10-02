@@ -1,37 +1,20 @@
 package net.dataforte.infinispan.web;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAException;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.context.Flag;
-import org.infinispan.interceptors.InvocationContextInterceptor;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.transaction.TransactionMode;
-import org.infinispan.transaction.TransactionTable;
-import org.infinispan.transaction.lookup.TransactionManagerLookup;
-import org.infinispan.transaction.tm.DummyTransaction;
-import org.infinispan.transaction.tm.DummyTransactionManager;
-import org.infinispan.transaction.xa.GlobalTransaction;
-import org.infinispan.transaction.xa.TransactionFactory;
-import org.infinispan.transaction.xa.recovery.RecoveryAdminOperations;
-import org.infinispan.tx.recovery.RecoveryTestUtil;
-import org.infinispan.tx.recovery.admin.InDoubtWithCommitFailsTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Infinispan configuration wizard
@@ -168,36 +151,36 @@ public class Listener implements ServletContextListener {
         queryCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put("notIndexedKey1", "notIndexedValue1");
 
 
-        if (deployTransactionalCache) {
-            // transactions with recovery management
-            ConfigurationBuilder configTrans = new ConfigurationBuilder();
-            configTrans.jmxStatistics().enable();
-            configTrans.transaction().transactionManagerLookup(new org.infinispan.tx.recovery.RecoveryDummyTransactionManagerLookup()).
-                    transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
-            configTrans.transaction().useSynchronization(false);
-            configTrans.transaction().recovery().enable();
-            configTrans.locking().useLockStriping(false);
-            configTrans.clustering().cacheMode(CacheMode.DIST_SYNC);
-            configTrans.deadlockDetection().enable();
-
-            manager.defineConfiguration("transactionalCache", configTrans.build());
-            Cache ctrans = manager.getCache("transactionalCache");
-
-            // **********************
-            // In doubt transactions preparation stuff - this is causing failures during deployment on EAPs in domain mode.
-            // Manually uncomment it, build was and deploy it on one standalone server and try it manually via JON gui.
-            // Operation getInDoubtTransactions should report failed transactions.
-
-            RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
-            try {
-                testInDoubt(true, ctrans, rao);
-            } catch (XAException e) {
-                System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
-                e.printStackTrace();
-            }
-
-            ctrans.put("key1", "value1");
-        }
+//        if (deployTransactionalCache) {
+//            // transactions with recovery management
+//            ConfigurationBuilder configTrans = new ConfigurationBuilder();
+//            configTrans.jmxStatistics().enable();
+//            configTrans.transaction().transactionManagerLookup(new org.infinispan.tx.recovery.RecoveryDummyTransactionManagerLookup()).
+//                    transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC);
+//            configTrans.transaction().useSynchronization(false);
+//            configTrans.transaction().recovery().enable();
+//            configTrans.locking().useLockStriping(false);
+//            configTrans.clustering().cacheMode(CacheMode.DIST_SYNC);
+//            configTrans.deadlockDetection().enable();
+//
+//            manager.defineConfiguration("transactionalCache", configTrans.build());
+//            Cache ctrans = manager.getCache("transactionalCache");
+//
+//            // **********************
+//            // In doubt transactions preparation stuff - this is causing failures during deployment on EAPs in domain mode.
+//            // Manually uncomment it, build was and deploy it on one standalone server and try it manually via JON gui.
+//            // Operation getInDoubtTransactions should report failed transactions.
+//
+//            RecoveryAdminOperations rao = ctrans.getAdvancedCache().getComponentRegistry().getComponent(RecoveryAdminOperations.class);
+//            try {
+//                testInDoubt(true, ctrans, rao);
+//            } catch (XAException e) {
+//                System.out.println("\nEXCEPTION IN TEST DOUBT METHOD.... Listener.java\n");
+//                e.printStackTrace();
+//            }
+//
+//            ctrans.put("key1", "value1");
+//        }
 
         // <editor-fold name=RollUps>
 // **********************
@@ -354,60 +337,60 @@ public class Listener implements ServletContextListener {
     }
 
 
-    private void testInDoubt(boolean commit, Cache ctrans, RecoveryAdminOperations recoveryAdminOperations) throws XAException {
-
-        assert recoveryAdminOperations.showInDoubtTransactions().isEmpty();
-        TransactionTable tt0 = ctrans.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
-
-
-        // need to intercept failure during commands
-        ctrans.getAdvancedCache().addInterceptorBefore(new InDoubtWithCommitFailsTest.ForceFailureInterceptor(),
-                InvocationContextInterceptor.class);
-
-
-        DummyTransaction dummyTransaction1 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key1");
-        DummyTransaction dummyTransaction2 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key2");
-        DummyTransaction dummyTransaction3 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key3");
-        RecoveryTestUtil.prepareTransaction(dummyTransaction1);
-        RecoveryTestUtil.prepareTransaction(dummyTransaction2);
-        RecoveryTestUtil.prepareTransaction(dummyTransaction3);
-
-        log.info("\n\n\n getXid():" + dummyTransaction1.getXid());
-        log.info("GlobalTransactionId: " + dummyTransaction2.getXid().getGlobalTransactionId());
-        log.info("GlobalTransactionId toString(): " + dummyTransaction2.getXid().getGlobalTransactionId().toString());
-        log.info("\n\n\n");
-
-        List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
-        transactions.add(dummyTransaction1);
-        transactions.add(dummyTransaction2);
-        transactions.add(dummyTransaction3);
-
-        assert tt0.getLocalTxCount() == 3;
-
-        for (DummyTransaction dTrans : transactions) {
-            try {
-                // will fail because of InDoubtWithCommitFailsTest.ForceFailureInterceptor()
-                // remove this interceptor later to be able to force manually commit/rollback/forget via JMX (RHQ/jconsole)
-                if (commit) {
-                    RecoveryTestUtil.commitTransaction(dTrans);
-                } else {
-                    RecoveryTestUtil.rollbackTransaction(dTrans);
-                }
-
-                assert false : "exception expected";
-            } catch (Exception e) {
-                //expected -- induced failure
-            }
-        }
-
-        // REMOVE FAILING INTERCEPTOR from a cache
-        System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
-        ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
-
-        GlobalTransaction globalTx = TransactionFactory.TxFactoryEnum.DLD_RECOVERY_XA.newGlobalTransaction();
-        dummyTransaction1.getXid().getGlobalTransactionId(); //??
-
-    }
+//    private void testInDoubt(boolean commit, Cache ctrans, RecoveryAdminOperations recoveryAdminOperations) throws XAException {
+//
+//        assert recoveryAdminOperations.showInDoubtTransactions().isEmpty();
+//        TransactionTable tt0 = ctrans.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
+//
+//
+//        // need to intercept failure during commands
+//        ctrans.getAdvancedCache().addInterceptorBefore(new InDoubtWithCommitFailsTest.ForceFailureInterceptor(),
+//                InvocationContextInterceptor.class);
+//
+//
+//        DummyTransaction dummyTransaction1 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key1");
+//        DummyTransaction dummyTransaction2 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key2");
+//        DummyTransaction dummyTransaction3 = RecoveryTestUtil.beginAndSuspendTx(ctrans, "key3");
+//        RecoveryTestUtil.prepareTransaction(dummyTransaction1);
+//        RecoveryTestUtil.prepareTransaction(dummyTransaction2);
+//        RecoveryTestUtil.prepareTransaction(dummyTransaction3);
+//
+//        log.info("\n\n\n getXid():" + dummyTransaction1.getXid());
+//        log.info("GlobalTransactionId: " + dummyTransaction2.getXid().getGlobalTransactionId());
+//        log.info("GlobalTransactionId toString(): " + dummyTransaction2.getXid().getGlobalTransactionId().toString());
+//        log.info("\n\n\n");
+//
+//        List<DummyTransaction> transactions = new LinkedList<DummyTransaction>();
+//        transactions.add(dummyTransaction1);
+//        transactions.add(dummyTransaction2);
+//        transactions.add(dummyTransaction3);
+//
+//        assert tt0.getLocalTxCount() == 3;
+//
+//        for (DummyTransaction dTrans : transactions) {
+//            try {
+//                // will fail because of InDoubtWithCommitFailsTest.ForceFailureInterceptor()
+//                // remove this interceptor later to be able to force manually commit/rollback/forget via JMX (RHQ/jconsole)
+//                if (commit) {
+//                    RecoveryTestUtil.commitTransaction(dTrans);
+//                } else {
+//                    RecoveryTestUtil.rollbackTransaction(dTrans);
+//                }
+//
+//                assert false : "exception expected";
+//            } catch (Exception e) {
+//                //expected -- induced failure
+//            }
+//        }
+//
+//        // REMOVE FAILING INTERCEPTOR from a cache
+//        System.out.println("\n\n\n Removing INTERCEPTOR causing induced failures during commits & rollbacks... ");
+//        ctrans.getAdvancedCache().removeInterceptor(InDoubtWithCommitFailsTest.ForceFailureInterceptor.class);
+//
+//        GlobalTransaction globalTx = TransactionFactory.TxFactoryEnum.DLD_RECOVERY_XA.newGlobalTransaction();
+//        dummyTransaction1.getXid().getGlobalTransactionId(); //??
+//
+//    }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
@@ -424,11 +407,11 @@ public class Listener implements ServletContextListener {
     }
 }
 
-class RecoveryDummyTransactionManagerLookup implements TransactionManagerLookup {
-    @Override
-    public synchronized TransactionManager getTransactionManager() throws Exception {
-        DummyTransactionManager dtm = new DummyTransactionManager();
-        dtm.setUseXaXid(true);
-        return dtm;
-    }
-}
+//class RecoveryDummyTransactionManagerLookup implements TransactionManagerLookup {
+//    @Override
+//    public synchronized TransactionManager getTransactionManager() throws Exception {
+//        DummyTransactionManager dtm = new DummyTransactionManager();
+//        dtm.setUseXaXid(true);
+//        return dtm;
+//    }
+//}
