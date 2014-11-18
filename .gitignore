@@ -15,6 +15,7 @@ rmBuildDeploy.sh
 
 # Idea #
 .idea/*
+*.iml
 /jon-jdg-support-app-idea-files/*
 
 /jon-jdg-plugin-testing-support/*
