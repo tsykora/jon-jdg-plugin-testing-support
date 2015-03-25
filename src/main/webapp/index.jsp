@@ -157,127 +157,127 @@
 
 
 
-    <%
+    <%--<%--%>
 
-        EmbeddedCacheManager managerRemoteLon = (EmbeddedCacheManager) application.getAttribute("managerRemoteLon");
+        <%--EmbeddedCacheManager managerRemoteLon = (EmbeddedCacheManager) application.getAttribute("managerRemoteLon");--%>
 
-        StringBuilder sb2 = new StringBuilder();
-        for (String name : managerRemoteLon.getCacheNames()) {
-            sb2.append(name + " | ");
-        }
-    %>
+        <%--StringBuilder sb2 = new StringBuilder();--%>
+        <%--for (String name : managerRemoteLon.getCacheNames()) {--%>
+            <%--sb2.append(name + " | ");--%>
+        <%--}--%>
+    <%--%>--%>
 
-    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb2.toString()%>
-        <br/><br/></b>
+    <%--All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb2.toString()%>--%>
+        <%--<br/><br/></b>--%>
 
-    <table>
-        <tr>
+    <%--<table>--%>
+        <%--<tr>--%>
 
-            <%
-                // for each cache
-                for (String name : managerRemoteLon.getCacheNames()) {
-            %>
+            <%--<%--%>
+                <%--// for each cache--%>
+                <%--for (String name : managerRemoteLon.getCacheNames()) {--%>
+            <%--%>--%>
 
-            <td>
+            <%--<td>--%>
 
-                <%
+                <%--<%--%>
 
-                    // get cache by name
-                    Cache c = managerRemoteLon.getCache(name);
+                    <%--// get cache by name--%>
+                    <%--Cache c = managerRemoteLon.getCache(name);--%>
 
-                    if (request.getParameter(name + "addEntry") != null) {
-                        int rand = r.nextInt(1000);
-                        c.put("key" + rand, "value" + rand);
-                    }
+                    <%--if (request.getParameter(name + "addEntry") != null) {--%>
+                        <%--int rand = r.nextInt(1000);--%>
+                        <%--c.put("key" + rand, "value" + rand);--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "stopCache") != null) {
-                        c.stop();
-                    }
+                    <%--if (request.getParameter(name + "stopCache") != null) {--%>
+                        <%--c.stop();--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "startCache") != null) {
-                        c.start();
-                    }
+                    <%--if (request.getParameter(name + "startCache") != null) {--%>
+                        <%--c.start();--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "clearCache") != null) {
-                        c.clear();
-                    }
+                    <%--if (request.getParameter(name + "clearCache") != null) {--%>
+                        <%--c.clear();--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "resetStatistics") != null) {
-                        for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {
-                            boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());
-                            if (isSubclass) {
-                                CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;
-                                cacheMgmtInterceptor.resetStatistics();
-                            }
-                        }
-                    }
+                    <%--if (request.getParameter(name + "resetStatistics") != null) {--%>
+                        <%--for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {--%>
+                            <%--boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());--%>
+                            <%--if (isSubclass) {--%>
+                                <%--CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;--%>
+                                <%--cacheMgmtInterceptor.resetStatistics();--%>
+                            <%--}--%>
+                        <%--}--%>
+                    <%--}--%>
 
 
-                    // stats
-                    int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();
-                    long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
-                    String status = c.getStatus().toString();
+                    <%--// stats--%>
+                    <%--int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();--%>
+                    <%--long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();--%>
+                    <%--String status = c.getStatus().toString();--%>
 
 
-                    // **********************
-                    // for each cache, page contetn:
-                %>
+                    <%--// **********************--%>
+                    <%--// for each cache, page contetn:--%>
+                <%--%>--%>
 
 
 
-                <br/>
-                Cache name: <b><u><%=name%></u></b>
-                <br/>
-                <br/>
-                Stats: <br/>
-                Current entries:
-                <%=currEntries%> <br/>
-                Total entries:
-                <%=totalEntries%> <br/>
-                Cache status:
-                <%=status%> <br/> <br/> <br/>
+                <%--<br/>--%>
+                <%--Cache name: <b><u><%=name%></u></b>--%>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--Stats: <br/>--%>
+                <%--Current entries:--%>
+                <%--<%=currEntries%> <br/>--%>
+                <%--Total entries:--%>
+                <%--<%=totalEntries%> <br/>--%>
+                <%--Cache status:--%>
+                <%--<%=status%> <br/> <br/> <br/>--%>
 
-                <%=name%> cache entries: <br/>
-                <%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>
+                <%--<%=name%> cache entries: <br/>--%>
+                <%--<%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>--%>
 
 
 
 
-                <br/>
-                <br/>
-                <%-- format: cachename + operation name --%>
-                <button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>
-                <button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>
-                <button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache
-                    Statistics
-                </button>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--&lt;%&ndash; format: cachename + operation name &ndash;%&gt;--%>
+                <%--<button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>--%>
+                <%--<button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>--%>
+                <%--<button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache--%>
+                    <%--Statistics--%>
+                <%--</button>--%>
 
 
-                <br/>
-                <br/>
-                <button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>
-                <button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--<button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>--%>
+                <%--<button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>--%>
 
 
-                <br/>
-                <br/>
-                <button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--<button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>--%>
 
-                <br/>
-                <br/>
-                <%--Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>--%>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--&lt;%&ndash;Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>&ndash;%&gt;--%>
 
-                <br/>
-                <br/>
+                <%--<br/>--%>
+                <%--<br/>--%>
 
-            </td>
+            <%--</td>--%>
 
-            <%
-                    // end for getCacheNames()
-                }
-            %>
-        </tr>
-    </table>
+            <%--<%--%>
+                    <%--// end for getCacheNames()--%>
+                <%--}--%>
+            <%--%>--%>
+        <%--</tr>--%>
+    <%--</table>--%>
 
 
 
@@ -289,127 +289,127 @@
 
 
 
-    <%
+    <%--<%--%>
 
-        EmbeddedCacheManager managerRemoteNyc = (EmbeddedCacheManager) application.getAttribute("managerRemoteNyc");
+        <%--EmbeddedCacheManager managerRemoteNyc = (EmbeddedCacheManager) application.getAttribute("managerRemoteNyc");--%>
 
-        StringBuilder sb3 = new StringBuilder();
-        for (String name : managerRemoteNyc.getCacheNames()) {
-            sb3.append(name + " | ");
-        }
-    %>
+        <%--StringBuilder sb3 = new StringBuilder();--%>
+        <%--for (String name : managerRemoteNyc.getCacheNames()) {--%>
+            <%--sb3.append(name + " | ");--%>
+        <%--}--%>
+    <%--%>--%>
 
-    All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb3.toString()%>
-        <br/><br/></b>
+    <%--All caches names excluding ___defaultcache (= started named caches from JON, or by app): <br/> <b><%=sb3.toString()%>--%>
+        <%--<br/><br/></b>--%>
 
-    <table>
-        <tr>
+    <%--<table>--%>
+        <%--<tr>--%>
 
-            <%
-                // for each cache
-                for (String name : managerRemoteNyc.getCacheNames()) {
-            %>
+            <%--<%--%>
+                <%--// for each cache--%>
+                <%--for (String name : managerRemoteNyc.getCacheNames()) {--%>
+            <%--%>--%>
 
-            <td>
+            <%--<td>--%>
 
-                <%
+                <%--<%--%>
 
-                    // get cache by name
-                    Cache c = managerRemoteNyc.getCache(name);
+                    <%--// get cache by name--%>
+                    <%--Cache c = managerRemoteNyc.getCache(name);--%>
 
-                    if (request.getParameter(name + "addEntry") != null) {
-                        int rand = r.nextInt(1000);
-                        c.put("key" + rand, "value" + rand);
-                    }
+                    <%--if (request.getParameter(name + "addEntry") != null) {--%>
+                        <%--int rand = r.nextInt(1000);--%>
+                        <%--c.put("key" + rand, "value" + rand);--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "stopCache") != null) {
-                        c.stop();
-                    }
+                    <%--if (request.getParameter(name + "stopCache") != null) {--%>
+                        <%--c.stop();--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "startCache") != null) {
-                        c.start();
-                    }
+                    <%--if (request.getParameter(name + "startCache") != null) {--%>
+                        <%--c.start();--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "clearCache") != null) {
-                        c.clear();
-                    }
+                    <%--if (request.getParameter(name + "clearCache") != null) {--%>
+                        <%--c.clear();--%>
+                    <%--}--%>
 
-                    if (request.getParameter(name + "resetStatistics") != null) {
-                        for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {
-                            boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());
-                            if (isSubclass) {
-                                CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;
-                                cacheMgmtInterceptor.resetStatistics();
-                            }
-                        }
-                    }
+                    <%--if (request.getParameter(name + "resetStatistics") != null) {--%>
+                        <%--for (CommandInterceptor interceptor : (List<CommandInterceptor>) c.getAdvancedCache().getInterceptorChain()) {--%>
+                            <%--boolean isSubclass = CacheMgmtInterceptor.class.isAssignableFrom(interceptor.getClass());--%>
+                            <%--if (isSubclass) {--%>
+                                <%--CacheMgmtInterceptor cacheMgmtInterceptor = (CacheMgmtInterceptor) interceptor;--%>
+                                <%--cacheMgmtInterceptor.resetStatistics();--%>
+                            <%--}--%>
+                        <%--}--%>
+                    <%--}--%>
 
 
-                    // stats
-                    int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();
-                    long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();
-                    String status = c.getStatus().toString();
+                    <%--// stats--%>
+                    <%--int currEntries = c.getAdvancedCache().getStats().getCurrentNumberOfEntries();--%>
+                    <%--long totalEntries = c.getAdvancedCache().getStats().getTotalNumberOfEntries();--%>
+                    <%--String status = c.getStatus().toString();--%>
 
 
-                    // **********************
-                    // for each cache, page contetn:
-                %>
+                    <%--// **********************--%>
+                    <%--// for each cache, page contetn:--%>
+                <%--%>--%>
 
 
 
-                <br/>
-                Cache name: <b><u><%=name%></u></b>
-                <br/>
-                <br/>
-                Stats: <br/>
-                Current entries:
-                <%=currEntries%> <br/>
-                Total entries:
-                <%=totalEntries%> <br/>
-                Cache status:
-                <%=status%> <br/> <br/> <br/>
+                <%--<br/>--%>
+                <%--Cache name: <b><u><%=name%></u></b>--%>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--Stats: <br/>--%>
+                <%--Current entries:--%>
+                <%--<%=currEntries%> <br/>--%>
+                <%--Total entries:--%>
+                <%--<%=totalEntries%> <br/>--%>
+                <%--Cache status:--%>
+                <%--<%=status%> <br/> <br/> <br/>--%>
 
-                <%=name%> cache entries: <br/>
-                <%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>
+                <%--<%=name%> cache entries: <br/>--%>
+                <%--<%=c.getStatus().toString().equals("RUNNING") ? c.getAdvancedCache().entrySet().toString() : "Cache is down at this moment."%>--%>
 
 
 
 
-                <br/>
-                <br/>
-                <%-- format: cachename + operation name --%>
-                <button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>
-                <button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>
-                <button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache
-                    Statistics
-                </button>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--&lt;%&ndash; format: cachename + operation name &ndash;%&gt;--%>
+                <%--<button type="submit" name="<%=name%>addEntry" value="Add Entry Button">Add Entry into Cache</button>--%>
+                <%--<button type="submit" name="<%=name%>clearCache" value="Clear Cache Button">CLEAR Cache</button>--%>
+                <%--<button type="submit" name="<%=name%>resetStatistics" value="Reset Statistics Button">Reset Cache--%>
+                    <%--Statistics--%>
+                <%--</button>--%>
 
 
-                <br/>
-                <br/>
-                <button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>
-                <button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--<button type="submit" name="<%=name%>startCache" value="Start Cache Button">START Cache</button>--%>
+                <%--<button type="submit" name="<%=name%>stopCache" value="Stop Cache Button">STOP Cache</button>--%>
 
 
-                <br/>
-                <br/>
-                <button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--<button type="submit" name="refreshButton" value="Refresh Button">Refresh</button>--%>
 
-                <br/>
-                <br/>
-                <%--Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>--%>
+                <%--<br/>--%>
+                <%--<br/>--%>
+                <%--&lt;%&ndash;Cache configuration: <%=manager.getCacheConfiguration(name).toString()%>&ndash;%&gt;--%>
 
-                <br/>
-                <br/>
+                <%--<br/>--%>
+                <%--<br/>--%>
 
-            </td>
+            <%--</td>--%>
 
-            <%
-                    // end for getCacheNames()
-                }
-            %>
-        </tr>
-    </table>
+            <%--<%--%>
+                    <%--// end for getCacheNames()--%>
+                <%--}--%>
+            <%--%>--%>
+        <%--</tr>--%>
+    <%--</table>--%>
 
 
 </form>
