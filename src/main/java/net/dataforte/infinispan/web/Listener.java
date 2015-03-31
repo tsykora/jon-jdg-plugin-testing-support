@@ -39,7 +39,6 @@ public class Listener implements ServletContextListener {
     EmbeddedCacheManager managerNycSite;
     EmbeddedCacheManager managerLonSite;
 
-    private boolean extendedDeployment = false;
 
 //   EmbeddedCacheManager managerForHrServer;
 //   EmbeddedCacheManager managerForHrTargetServer;
@@ -96,35 +95,29 @@ public class Listener implements ServletContextListener {
         configQueryIndexer.indexing().enable().indexLocalOnly(true).withProperties(properties);
 
 
-       if (extendedDeployment) {
-          try {
-             managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
-          } catch (IOException e) {
-             System.out.println("********** PROBLEM while parsing xsite-test-lon.xml *************");
-             e.printStackTrace();
-          }
+        try {
+            managerLonSite = new DefaultCacheManager("xsite-test-lon.xml");
+        } catch (IOException e) {
+            System.out.println("********** PROBLEM while parsing xsite-test-lon.xml *************");
+            e.printStackTrace();
+        }
 
-          // this is LON and is backed up to NYC
-          try {
-             managerNycSite = new DefaultCacheManager("xsite-test-nyc.xml");
-          } catch (IOException e) {
-             System.out.println("********** PROBLEM xsite-test-nyc.xml *************");
-             e.printStackTrace();
-          }
-       }
-
+        // this is LON and is backed up to NYC
+        try {
+            managerNycSite = new DefaultCacheManager("xsite-test-nyc.xml");
+        } catch (IOException e) {
+            System.out.println("********** PROBLEM xsite-test-nyc.xml *************");
+            e.printStackTrace();
+        }
 
         // a way how to access protocol in Transport
         // manager.getTransport().getChannel().getProtocolStack().addProtocol();
 
 
+        manager.defineConfiguration("fcsDistCache", configFCSdist.build());
         manager.defineConfiguration("default", configJmxOnly.build());
-
-       if (extendedDeployment) {
-          manager.defineConfiguration("fcsDistCache", configFCSdist.build());
-          manager.defineConfiguration("invalidationCache", configInvalidation.build());
-          manager.defineConfiguration("___default", configQueryIndexer.build());
-       }
+        manager.defineConfiguration("invalidationCache", configInvalidation.build());
+        manager.defineConfiguration("___default", configQueryIndexer.build());
 
         // some initial puts, these puts will cause:
         // INFO  [org.infinispan.jmx.CacheJmxRegistration] (MSC service thread 1-7) ISPN000031:
@@ -137,27 +130,26 @@ public class Listener implements ServletContextListener {
         c.put("key1", "value1");
 
 
-       if (extendedDeployment) {
-          Cache cfcs = manager.getCache("fcsDistCache");
-          Cache cinval = manager.getCache("invalidationCache");
+        Cache cfcs = manager.getCache("fcsDistCache");
+        Cache cinval = manager.getCache("invalidationCache");
 
 
-          cfcs.put("key1", "value1");
-          cinval.put("key1", "value1");
+        cfcs.put("key1", "value1");
+        cinval.put("key1", "value1");
 
-          // XSite stuff
-          // put into LON -- should be backed up (replicated) to NYC
-          Cache clon = managerLonSite.getCache("LonCache");
-          clon.put("keyLon1", "valueLon1");
-          clon.put("keyLon2", "valueLon2");
-          // put into NYC
-          Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
-          cnyc.put("keyNyc1", "valueNyc1"); // one simple put
+        // XSite stuff
+        // put into LON -- should be backed up (replicated) to NYC
+        Cache clon = managerLonSite.getCache("LonCache");
+        clon.put("keyLon1", "valueLon1");
+        clon.put("keyLon2", "valueLon2");
+        // put into NYC
+        Cache cnyc = managerNycSite.getCache("NycCacheBackupForLon");
+        cnyc.put("keyNyc1", "valueNyc1"); // one simple put
 
-          Cache queryCache = manager.getCache("___default");
-          queryCache.put("keyQuery1", "valueQuery1");
-          queryCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put("notIndexedKey1", "notIndexedValue1");
-       }
+        Cache queryCache = manager.getCache("___default");
+        queryCache.put("keyQuery1", "valueQuery1");
+        queryCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put("notIndexedKey1", "notIndexedValue1");
+
 
 //        if (deployTransactionalCache) {
 //            // transactions with recovery management
@@ -336,16 +328,12 @@ public class Listener implements ServletContextListener {
 
 
         sce.getServletContext().setAttribute(CONTAINER, manager.toString());
+        sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
+        sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
+
         sce.getServletContext().setAttribute("manager", manager);
-
-       if (extendedDeployment) {
-          sce.getServletContext().setAttribute(CONTAINER2, managerLonSite.toString());
-          sce.getServletContext().setAttribute(CONTAINER3, managerNycSite.toString());
-
-          sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
-          sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
-       }
-
+        sce.getServletContext().setAttribute("managerRemoteLon", managerLonSite);
+        sce.getServletContext().setAttribute("managerRemoteNyc", managerNycSite);
     }
 
 
@@ -408,15 +396,12 @@ public class Listener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         sce.getServletContext().removeAttribute(CACHE);
         sce.getServletContext().removeAttribute(CONTAINER);
+        sce.getServletContext().removeAttribute(CONTAINER2);
+        sce.getServletContext().removeAttribute(CONTAINER3);
+
         manager.stop();
-
-       if (extendedDeployment) {
-          sce.getServletContext().removeAttribute(CONTAINER2);
-          sce.getServletContext().removeAttribute(CONTAINER3);
-
-          managerLonSite.stop();
-          managerNycSite.stop();
-       }
+        managerLonSite.stop();
+        managerNycSite.stop();
 //      managerForHrServer.stop();
 //      managerForHrTargetServer.stop();
     }
