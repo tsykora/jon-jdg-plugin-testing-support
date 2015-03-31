@@ -59,7 +59,7 @@ public class Listener implements ServletContextListener {
 
         // for default cache
         ConfigurationBuilder configJmxOnly = new ConfigurationBuilder();
-        configJmxOnly.jmxStatistics().enable();
+        configJmxOnly.jmxStatistics();
 
 
         // FCS + Dist
@@ -119,9 +119,9 @@ public class Listener implements ServletContextListener {
 
 
         manager.defineConfiguration("default", configJmxOnly.build());
-        manager.defineConfiguration("fcsDistCache", configFCSdist.build());
 
        if (extendedDeployment) {
+          manager.defineConfiguration("fcsDistCache", configFCSdist.build());
           manager.defineConfiguration("invalidationCache", configInvalidation.build());
           manager.defineConfiguration("___default", configQueryIndexer.build());
        }
