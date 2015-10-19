@@ -66,6 +66,7 @@ public class Listener implements ServletContextListener {
         configFCSdist.jmxStatistics().enable();
         configFCSdist.persistence().passivation(true).addSingleFileStore().location("/tmp/");
         configFCSdist.clustering().cacheMode(CacheMode.DIST_ASYNC).l1().enable();
+        configFCSdist.eviction().maxEntries(50);
 
         // Invalidation
         ConfigurationBuilder configInvalidation = new ConfigurationBuilder();
