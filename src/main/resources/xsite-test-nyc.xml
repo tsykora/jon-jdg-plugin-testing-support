@@ -24,11 +24,22 @@
 
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-        xmlns="urn:infinispan:config:6.0">
+        xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
+        xmlns="urn:infinispan:config:8.0">
 
-    <global>
+    
+    <!--<default>-->
+        <!--<locking concurrencyLevel="100" lockAcquisitionTimeout="1000"/>-->
+        <!--<sites>-->
+            <!--<backups>-->
+                <!--&lt;!&ndash;<backup site="NYC" strategy="SYNC" backupFailurePolicy="IGNORE" timeout="12003"/>&ndash;&gt;-->
+                <!--&lt;!&ndash;<backup site="SFO" strategy="ASYNC"/>&ndash;&gt;-->
+            <!--</backups>-->
+        <!--</sites>-->
+        <!--<jmxStatistics enabled="false"/>-->
+    <!--</default>-->
 
+    <namedCache name="NycCacheBackupForLon">
         <site local="NYC"/>
 
         <transport clusterName="infinispan-cluster-NYC" distributedSyncTimeout="50000" nodeName="NYC-NodeName" machineId="m2"
@@ -44,20 +55,7 @@
             <!-- See the JGroupsTransport javadocs for more flags -->
         </transport>
         <globalJmxStatistics enabled="true" jmxDomain="org.infinispan3"/>
-    </global>
-
-    <!--<default>-->
-        <!--<locking concurrencyLevel="100" lockAcquisitionTimeout="1000"/>-->
-        <!--<sites>-->
-            <!--<backups>-->
-                <!--&lt;!&ndash;<backup site="NYC" strategy="SYNC" backupFailurePolicy="IGNORE" timeout="12003"/>&ndash;&gt;-->
-                <!--&lt;!&ndash;<backup site="SFO" strategy="ASYNC"/>&ndash;&gt;-->
-            <!--</backups>-->
-        <!--</sites>-->
-        <!--<jmxStatistics enabled="false"/>-->
-    <!--</default>-->
-
-    <namedCache name="NycCacheBackupForLon">
+        
         <clustering mode="DIST"></clustering>
         <sites>
             <backups/>

@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-            xmlns="urn:infinispan:config:6.0">
-
-    <!-- *************************** -->
-    <!-- System-wide global settings -->
-    <!-- *************************** -->
-
-    <global>
-
+            xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
+            xmlns="urn:infinispan:config:8.0">
+   
+    <!-- *************************************** -->
+    <!--  Default Cache, with indexing enabled.  -->
+    <!-- *************************************** -->
+    
+        
         <globalJmxStatistics
                 enabled="true"
                 allowDuplicateDomains="true"
@@ -24,13 +23,6 @@
             <!-- Note that the JGroups transport uses sensible defaults if no configuration
                 property is defined. See the JGroupsTransport javadocs for more flags -->
         </transport>
-
-    </global>
-
-    <!-- *************************************** -->
-    <!--  Default Cache, with indexing enabled.  -->
-    <!-- *************************************** -->
-    <default>
 
         <locking
                 lockAcquisitionTimeout="20000"
@@ -78,6 +70,6 @@
                 <property name="hibernate.search.lucene_version" value="LUCENE_36" />
             </properties>
         </indexing>
-    </default>
+    
 
 </infinispan>

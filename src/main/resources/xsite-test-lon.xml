@@ -24,11 +24,13 @@
 
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-        xmlns="urn:infinispan:config:6.0">
+        xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
+        xmlns="urn:infinispan:config:8.0">
 
-    <global>
+    
 
+    <namedCache name="LonCache">
+        
         <site local="LON"/>
 
         <transport clusterName="infinispan-cluster-LON" distributedSyncTimeout="50000" nodeName="LON-NodeName" machineId="m1"
@@ -41,9 +43,7 @@
             <!-- See the JGroupsTransport javadocs for more flags -->
         </transport>
         <globalJmxStatistics enabled="true" jmxDomain="org.infinispan2"/>
-    </global>
-
-    <namedCache name="LonCache">
+        
         <clustering mode="DIST"></clustering>
         <sites>
             <backups backupSites="NYC">
