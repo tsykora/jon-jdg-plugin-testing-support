@@ -2,74 +2,46 @@
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
             xmlns="urn:infinispan:config:8.0">
-   
+
     <!-- *************************************** -->
     <!--  Default Cache, with indexing enabled.  -->
     <!-- *************************************** -->
-    
-        
-        <globalJmxStatistics
-                enabled="true"
-                allowDuplicateDomains="true"
-                />
 
+    <cache-container default-cache="default">
         <!-- If the transport is omitted, there is no way to create distributed or clustered
             caches. There is no added cost to defining a transport but not creating a cache that uses one,
             since the transport is created and initialized lazily. -->
-        <transport
-                clusterName="Infinispan-Query-Cluster"
-                >
+        <transport cluster="Infinispan-Query-Cluster" />
+        <jmx duplicate-domains="true">
+            <property name="enabled">true</property>
+        </jmx>
 
-            <!-- Note that the JGroups transport uses sensible defaults if no configuration
-                property is defined. See the JGroupsTransport javadocs for more flags -->
-        </transport>
+        <distributed-cache name="default" mode="SYNC" statistics="true">
 
-        <locking
-                lockAcquisitionTimeout="20000"
-                writeSkewCheck="false"
-                concurrencyLevel="500"
-                useLockStriping="false" />
+            <locking
+                  acquire-timeout="20000"
+                  write-skew="false"
+                  concurrency-level="500"
+                  striping="false" />
 
-        <clustering
-                mode="distribution">
+            <eviction max-entries="-1" strategy="NONE" />
 
-            <!-- Prefer loading all data at startup than later -->
-            <stateTransfer
-                    timeout="480000"
-                    fetchInMemoryState="true" />
+            <expiration max-idle="-1" />
 
-            <!-- Network calls are synchronous by default -->
-            <sync
-                    replTimeout="20000" />
-        </clustering>
-
-        <jmxStatistics
-                enabled="true" />
-
-        <eviction
-                maxEntries="-1"
-                strategy="NONE" />
-
-        <expiration
-                maxIdle="-1"
-                reaperEnabled="false" />
-
-        <indexing enabled="true" indexLocalOnly="true">
-            <properties>
-
+            <indexing index="LOCAL">
                 <!-- Use our custom IndexManager; TODO autoinject by default? -->
-                <property name="hibernate.search.default.indexmanager" value="org.infinispan.query.indexmanager.InfinispanIndexManager" />
+                <property name="hibernate.search.default.indexmanager">org.infinispan.query.indexmanager.InfinispanIndexManager</property>
 
                 <!-- specify the managed index is to be shared across the nodes -->
-                <property name="hibernate.search.default.directory_provider" value="infinispan" />
+                <property name="hibernate.search.default.directory_provider">infinispan</property>
 
                 <!-- Supporting exclusive index usage will require lock cleanup on crashed nodes to be implemented -->
-                <property name="hibernate.search.default.exclusive_index_use" value="false" />
+                <property name="hibernate.search.default.exclusive_index_use">false</property>
 
                 <!-- Use latest Lucene version -->
-                <property name="hibernate.search.lucene_version" value="LUCENE_36" />
-            </properties>
-        </indexing>
-    
-
+                <property name="hibernate.search.lucene_version">LUCENE_36</property>
+            </indexing>
+            <state-transfer timeout="480000" enabled="true" />
+        </distributed-cache>
+    </cache-container>
 </infinispan>

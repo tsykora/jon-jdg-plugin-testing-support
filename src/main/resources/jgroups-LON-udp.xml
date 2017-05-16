@@ -22,7 +22,7 @@
   -->
 <config xmlns="urn:org:jgroups"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:org:jgroups file:schema/JGroups-3.2.xsd">
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.0.xsd">
     <UDP
             mcast_addr="${jgroups.udp.mcast_addr:228.6.7.8}"
             mcast_port="${jgroups.udp.mcast_port:46655}"
@@ -31,7 +31,6 @@
             ucast_send_buf_size="640k"
             mcast_recv_buf_size="25m"
             mcast_send_buf_size="640k"
-            loopback="true"
             max_bundle_size="64k"
             ip_ttl="${jgroups.udp.ip_ttl:2}"
             enable_diagnostics="false"
@@ -43,21 +42,10 @@
             thread_pool.min_threads="2"
             thread_pool.max_threads="30"
             thread_pool.keep_alive_time="60000"
-            thread_pool.queue_enabled="true"
-            thread_pool.queue_max_size="100"
-            thread_pool.rejection_policy="Discard"
-
-            oob_thread_pool.enabled="true"
-            oob_thread_pool.min_threads="2"
-            oob_thread_pool.max_threads="30"
-            oob_thread_pool.keep_alive_time="60000"
-            oob_thread_pool.queue_enabled="false"
-            oob_thread_pool.queue_max_size="100"
-            oob_thread_pool.rejection_policy="Discard"
             />
 
-    <PING timeout="3000" num_initial_members="3"/>
-    <MERGE2 max_interval="30000" min_interval="10000"/>
+    <PING />
+    <MERGE3 max_interval="30000" min_interval="10000"/>
     <FD_SOCK/>
     <FD_ALL timeout="15000"/>
     <VERIFY_SUSPECT timeout="5000"/>
@@ -71,18 +59,15 @@
             xmit_table_num_rows="100"
             xmit_table_msgs_per_row="10000"
             xmit_table_max_compaction_time="10000"
-            max_msg_batch_size="100"/>
+            />
 
     <!-- Commented when upgraded to 3.1.0.Alpha (remove eventually)
  <UNICAST timeout="300,600,1200"/>  -->
-    <UNICAST2
-            stable_interval="5000"
+    <UNICAST3
             xmit_interval="500"
-            max_bytes="1m"
             xmit_table_num_rows="20"
             xmit_table_msgs_per_row="10000"
             xmit_table_max_compaction_time="10000"
-            max_msg_batch_size="100"
             conn_expiry_timeout="0"/>
     <pbcast.STABLE stability_delay="500" desired_avg_gossip="5000" max_bytes="1m"/>
     <pbcast.GMS print_local_addr="false" join_timeout="3000" view_bundling="true"/>

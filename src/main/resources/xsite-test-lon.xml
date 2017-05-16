@@ -23,57 +23,25 @@
   -->
 
 <infinispan
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
-        xmlns="urn:infinispan:config:8.0">
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
+      xmlns="urn:infinispan:config:8.0">
 
-    
+    <!-- Note that the JGroups transport uses sensible defaults if no configuration property is defined. -->
+    <jgroups>
+        <stack-file name="udp" path="jgroups-LON-udp.xml"/>
+    </jgroups>
 
-    <namedCache name="LonCache">
-        
-        <site local="LON"/>
-
-        <transport clusterName="infinispan-cluster-LON" distributedSyncTimeout="50000" nodeName="LON-NodeName" machineId="m1"
-                   rackId="r1" siteId="s1">
-            <!-- Note that the JGroups transport uses sensible defaults if no configuration property is defined. -->
-            <properties>
-                <!--UDP jgroups-udp.xml was here-->
-                <property name="configurationFile" value="jgroups-LON-udp.xml"/>
-            </properties>
-            <!-- See the JGroupsTransport javadocs for more flags -->
-        </transport>
-        <globalJmxStatistics enabled="true" jmxDomain="org.infinispan2"/>
-        
-        <clustering mode="DIST"></clustering>
-        <sites>
-            <backups backupSites="NYC">
+    <cache-container default-cache="LonCache">
+        <transport cluster="infinispan-cluster-LON" node-name="LON-NodeName" machine="m1"
+                   rack="r1" site="LON" stack="udp"/>
+        <jmx domain="org.infinispan2">
+            <property name="enabled">true</property>
+        </jmx>
+        <distributed-cache name="LonCache" statistics="true">
+            <backups>
                 <backup site="NYC" strategy="ASYNC" timeout="12003"/>
-                <!--<backup site="SFO" strategy="ASYNC"/>-->
             </backups>
-            <backupFor/>
-        </sites>
-        <jmxStatistics enabled="true"/>
-
-        <!-- example configuration of singleFileStore -->
-        <!--<persistence passivation="false">-->
-            <!--<singleFile-->
-                    <!--shared="false"-->
-                    <!--preload="true"-->
-                    <!--fetchPersistentState="true"-->
-                    <!--ignoreModifications="false"-->
-                    <!--purgeOnStartup="false"-->
-                    <!--location="${java.io.tmpdir}" >-->
-                <!--<async-->
-                        <!--enabled="true"-->
-                        <!--flushLockTimeout="15000"-->
-                        <!--threadPoolSize="5" />-->
-                <!--<singleton-->
-                        <!--enabled="true"-->
-                        <!--pushStateWhenCoordinator="true"-->
-                        <!--pushStateTimeout="20000" />-->
-            <!--</singleFile>-->
-        <!--</persistence>-->
-
-    </namedCache>
-
+        </distributed-cache>
+    </cache-container>
 </infinispan>

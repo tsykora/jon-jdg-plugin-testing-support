@@ -27,64 +27,22 @@
         xsi:schemaLocation="urn:infinispan:config:8.0 http://www.infinispan.org/schemas/infinispan-config-8.0.xsd"
         xmlns="urn:infinispan:config:8.0">
 
-    
-    <!--<default>-->
-        <!--<locking concurrencyLevel="100" lockAcquisitionTimeout="1000"/>-->
-        <!--<sites>-->
-            <!--<backups>-->
-                <!--&lt;!&ndash;<backup site="NYC" strategy="SYNC" backupFailurePolicy="IGNORE" timeout="12003"/>&ndash;&gt;-->
-                <!--&lt;!&ndash;<backup site="SFO" strategy="ASYNC"/>&ndash;&gt;-->
-            <!--</backups>-->
-        <!--</sites>-->
-        <!--<jmxStatistics enabled="false"/>-->
-    <!--</default>-->
+    <!-- Note that the JGroups transport uses sensible defaults if no configuration property is defined. -->
+    <!--UDP jgroups-udp.xml was here-->
+    <!-- mcast_addr have to be different from LON jgroups -->
+    <jgroups>
+        <stack-file name="udp" path="jgroups-NYC-udp.xml"/>
+    </jgroups>
 
-    <namedCache name="NycCacheBackupForLon">
-        <site local="NYC"/>
+    <cache-container default-cache="NycCacheBackupForLon">
+        <transport cluster="infinispan-cluster-NYC" node-name="NYC-NodeName" machine="m2"/>
+        <jmx domain="org.infinispan3">
+            <property name="enabled">true</property>
+        </jmx>
 
-        <transport clusterName="infinispan-cluster-NYC" distributedSyncTimeout="50000" nodeName="NYC-NodeName" machineId="m2"
-                   rackId="r2" siteId="s2">
-            <!-- Note that the JGroups transport uses sensible defaults if no configuration property is defined. -->
-            <properties>
-                <!--UDP jgroups-udp.xml was here-->
-                <!-- mcast_addr have to be different from LON jgroups -->
+    <distributed-cache name="NycCacheBackupForLon" statistics="true">
+        <backup-for remote-cache="LonCache" remote-site="LON" />
+    </distributed-cache>
 
-                <property name="configurationFile" value="jgroups-NYC-udp.xml"/>
-
-            </properties>
-            <!-- See the JGroupsTransport javadocs for more flags -->
-        </transport>
-        <globalJmxStatistics enabled="true" jmxDomain="org.infinispan3"/>
-        
-        <clustering mode="DIST"></clustering>
-        <sites>
-            <backups/>
-            <backupFor remoteCache="LonCache" remoteSite="LON"/>
-        </sites>
-        <jmxStatistics enabled="true"/>
-    </namedCache>
-
-    <!--<namedCache name="importantCache">-->
-        <!--<sites>-->
-            <!--<backups>-->
-                <!--<backup site="NYC2" strategy="SYNC" backupFailurePolicy="FAIL" timeout="160000"/>-->
-            <!--</backups>-->
-        <!--</sites>-->
-    <!--</namedCache>-->
-
-    <!--<namedCache name="inheritor"/>-->
-
-    <!--<namedCache name="noBackups">-->
-        <!--<sites/>-->
-    <!--</namedCache>-->
-
-    <!--<namedCache name="customBackupPolicy">-->
-        <!--<sites>-->
-            <!--<backups>-->
-                <!--<backup site="NYC2" strategy="SYNC" backupFailurePolicy="CUSTOM"-->
-                        <!--failurePolicyClass="org.infinispan.xsite.CountingCustomFailurePolicy" timeout="160000"/>-->
-            <!--</backups>-->
-        <!--</sites>-->
-    <!--</namedCache>-->
-
+    </cache-container>
 </infinispan>
