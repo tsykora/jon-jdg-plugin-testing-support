@@ -7,7 +7,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <infinispan.version>8.4.0.Final-redhat-2</infinispan.version>
+        <infinispan.version>test</infinispan.version>
     </properties>
 
     <build>
